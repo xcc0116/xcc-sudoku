@@ -62,14 +62,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .share-hint{font-size:.65rem;color:var(--text-dim);text-align:center}
 
 /* ===== ERR SETTING ===== */
-.err-setting{display:flex;flex-direction:column;align-items:center;gap:4px;margin:4px 0;width:100%;max-width:300px}
-.err-label{font-size:.75rem;color:var(--text-dim)}
-.err-control{display:flex;align-items:center;gap:6px}
-.err-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-blue);border-radius:8px;font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.err-setting{display:flex;align-items:center;gap:5px;margin:2px 0;font-size:.75rem}
+.err-label{color:var(--text-dim)}
+.err-btn{width:26px;height:26px;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-blue);border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0}
 .err-btn:hover,.err-btn:active{background:var(--neon-blue);color:#000}
-.err-control input{width:64px;text-align:center;padding:5px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-green);border-radius:8px;font-size:1rem;font-weight:700;-moz-appearance:textfield}
-.err-control input::-webkit-inner-spin-button,.err-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.err-hint{font-size:.6rem;color:var(--text-dim)}
+.err-setting input{width:48px;text-align:center;padding:3px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-green);border-radius:6px;font-size:.85rem;font-weight:700;-moz-appearance:textfield}
+.err-setting input::-webkit-inner-spin-button,.err-setting input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.err-hint{color:var(--text-dim);font-size:.6rem}
 
 /* ===== SHARE GUIDE MODAL ===== */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;align-items:center;justify-content:center;padding:20px}
@@ -149,19 +148,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="diff-card mid" onclick="startGame(6)"><div class="icon">🟡</div><div class="label">6×6</div><div class="desc">进阶级<br>动动脑子</div><span class="badge">有点挑战</span></div>
     <div class="diff-card hard" onclick="startGame(9)"><div class="icon">🔵</div><div class="label">9×9</div><div class="desc">经典级<br>全面烧脑</div><span class="badge">高手对决</span></div>
   </div>
-  <div class="err-setting">
-    <div class="err-label">容错次数</div>
-    <div class="err-control">
-      <button class="err-btn" onclick="adjustErr(-1)">−</button>
-      <input id="err-input" type="number" min="0" max="9999" value="3" onchange="setErr(this.value)">
-      <button class="err-btn" onclick="adjustErr(1)">+</button>
-    </div>
-    <div class="err-hint">0=无限容错 · 默认3次</div>
-  </div>
   <div class="stats-bar">
     <div class="stat"><div class="num" id="s-played">0</div><div class="lbl">已游玩</div></div>
     <div class="stat"><div class="num" id="s-won">0</div><div class="lbl">已通关</div></div>
     <div class="stat"><div class="num" id="s-best">--</div><div class="lbl">最佳用时</div></div>
+  </div>
+  <div class="err-setting">
+    <span class="err-label">容错</span>
+    <button class="err-btn" onclick="adjustErr(-1)">−</button>
+    <input id="err-input" type="number" min="0" max="9999" value="3" onchange="setErr(this.value)">
+    <button class="err-btn" onclick="adjustErr(1)">+</button>
+    <span class="err-hint">0=无限</span>
   </div>
   <div class="share-section">
     <button class="share-btn" onclick="doShare()"><span class="glow"></span><span class="icon">📤</span> 分享给朋友</button>
