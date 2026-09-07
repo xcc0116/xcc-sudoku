@@ -86,6 +86,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .err-presets button{padding:6px 14px;border:1px solid var(--border);background:var(--card);color:var(--text-dim);border-radius:20px;font-size:.7rem;cursor:pointer}
 .err-presets button:active{background:var(--neon-blue);color:#000;border-color:var(--neon-blue)}
 .err-note{font-size:.6rem;color:var(--text-dim);text-align:center;margin-top:8px}
+.hint-pick{width:40px;height:40px;border:1px solid var(--border);background:var(--card);color:var(--neon-yellow);border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.hint-pick:active{background:var(--neon-yellow);color:#000}
 
 /* Rules panel */
 .rules-body h4{font-size:.8rem;color:var(--neon-blue);margin:10px 0 4px}
@@ -269,18 +271,14 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
     <div class="err-note">设为 0 表示无限容错</div>
     <div style="height:1px;background:var(--border);margin:10px 0"></div>
     <h4 style="font-size:.8rem;color:var(--neon-blue);text-align:center;margin-bottom:8px">💡 提示次数</h4>
-    <div class="err-panel-body">
-      <button class="err-big-btn" onclick="adjustHint(-1)">−</button>
-      <input id="hint-input" type="number" min="0" max="99" value="5" onchange="setHint(this.value)">
-      <button class="err-big-btn" onclick="adjustHint(1)">+</button>
+    <div class="err-presets" style="justify-content:center;gap:8px">
+      <button onclick="setHint(1)" class="hint-pick">1</button>
+      <button onclick="setHint(2)" class="hint-pick">2</button>
+      <button onclick="setHint(3)" class="hint-pick">3</button>
+      <button onclick="setHint(4)" class="hint-pick">4</button>
+      <button onclick="setHint(5)" class="hint-pick">5</button>
     </div>
-    <div class="err-presets">
-      <button onclick="setHint(0)">无限</button>
-      <button onclick="setHint(3)">3次</button>
-      <button onclick="setHint(5)">5次</button>
-      <button onclick="setHint(5)">5次</button>
-    </div>
-    <div class="err-note">设为 0 表示无限提示</div>
+    <div class="err-note">选择每局可用的提示次数</div>
   </div>
 </div>
 
@@ -424,30 +422,25 @@ function setErr(v){v=Math.max(0,Math.min(9999,parseInt(v)||0));document.getEleme
 let drafted=new Set();let submitted=false;let wrongCells=new Set();
 function submitDraft(){
   if(gameOver)return;
-  if(!submitted){
-    // First submit - check all drafted cells
-    let wrong=0;
-    drafted.forEach(function(k){
-      const[r,c]=k.split(",").map(Number);
-      if(userGrid[r][c]!==solution[r][c]){wrong++;wrongCells.add(k)}
-    });
-    if(wrong>0){
-      errCount+=wrong;document.getElementById("err-count").textContent=errCount;
-      playErr();submitted=true;render();
-      if(maxErr>0&&errCount>=maxErr){
-        gameOver=true;stopTimer();stats.played++;stats.lost++;stats.streak=0;
-        stats.perDiff[size].played++;stats.history.push({size:size,won:false,time:timerSec,err:errCount});
-        saveStats();setTimeout(()=>alert("💀 错误过多，游戏结束！"),100);backToMenu();return;
-      }
-      toast("❌ 有 "+wrong+" 处错误，请修改红色格子后再提交！");
-    }else{playOk();render();toast("✅ 全部正确！");drafted.clear();submitted=false;checkWin()}
+  // Re-check ALL drafted cells every time
+  let wrong=0;wrongCells.clear();
+  drafted.forEach(function(k){
+    const[r,c]=k.split(",").map(Number);
+    if(userGrid[r][c]!==solution[r][c]){wrong++;wrongCells.add(k)}
+  });
+  submitted=true;
+  render();
+  if(wrong>0){
+    errCount+=wrong;document.getElementById("err-count").textContent=errCount;
+    playErr();
+    if(maxErr>0&&errCount>=maxErr){
+      gameOver=true;stopTimer();stats.played++;stats.lost++;stats.streak=0;
+      stats.perDiff[size].played++;stats.history.push({size:size,won:false,time:timerSec,err:errCount});
+      saveStats();setTimeout(()=>alert("💀 错误过多，游戏结束！"),100);backToMenu();return;
+    }
+    toast("❌ 有 "+wrong+" 处错误，红色标记，请修改！");
   }else{
-    // Resubmit - check if wrongCells are fixed
-    let stillWrong=0;
-    wrongCells.forEach(function(k){const[r,c]=k.split(",").map(Number);if(userGrid[r][c]!==solution[r][c])stillWrong++});
-    if(stillWrong>0){playErr();toast("❌ 还有 "+stillWrong+" 处错误未修改！")}
-    else{playOk();toast("✅ 全部修正！继续加油！");submitted=false;drafted.clear();wrongCells.clear();checkWin()}
-    render();
+    playOk();toast("✅ 全部正确！");submitted=false;drafted.clear();wrongCells.clear();checkWin();
   }
 }
 function placeNum(n){
