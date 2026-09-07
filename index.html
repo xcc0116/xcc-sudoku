@@ -152,6 +152,13 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 #board{display:inline-grid;gap:1px;background:var(--border);border:2px solid var(--border);border-radius:6px;overflow:hidden;touch-action:manipulation}
 .cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:background .1s;user-select:none;-webkit-tap-highlight-color:transparent}
 .cell.fixed{background:var(--cell-fixed);color:var(--neon-blue)}
+
+/* Notes mode */
+.mode-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.mode-btn{padding:5px 12px;font-size:.65rem;font-weight:700;cursor:pointer;border:none;background:var(--card);color:var(--text-dim);transition:.15s}
+.mode-btn.active{background:var(--neon-blue);color:#000}
+.cell-notes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;width:100%;height:100%;padding:1px}
+.cell-notes span{font-size:clamp(6px,1.5vw,9px);line-height:1;display:flex;align-items:center;justify-content:center;color:var(--neon-purple);opacity:.8}
 .cell.user{color:var(--neon-yellow)}.cell.submitted-ok{color:var(--neon-green)}.cell.submitted-err{background:var(--cell-err);color:var(--neon-red)!important}
 .cell.selected{background:var(--cell-sel)!important}
 .cell.same-num{background:var(--cell-same)}
@@ -349,6 +356,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
   <div class="game-bottom">
     <div id="numpad"></div>
     <div class="game-actions">
+      <div class="mode-toggle"><button class="mode-btn active" id="mode-fill" onclick="setMode('fill')">✏️ 填数</button><button class="mode-btn" id="mode-note" onclick="setMode('note')">📋 草稿</button></div>
       <button class="gbtn" id="btn-submit" onclick="submitDraft()">📝 提交</button>
       <button class="gbtn" onclick="showHint()">💡 提示</button>
       <button class="gbtn red" onclick="giveUp()">🏳️ 放弃</button>
@@ -422,7 +430,8 @@ function adjustErr(d){let v=parseInt(document.getElementById('err-input').value)
 function setHint(v){v=Math.max(1,Math.min(5,parseInt(v)||3));localStorage.setItem("xcc-maxHints",v);maxHints=v;toast("💡 提示次数设为 "+v+" 次")}
 function setErr(v){v=Math.max(0,Math.min(9999,parseInt(v)||0));document.getElementById('err-input').value=v;localStorage.setItem('xcc-maxErr',v);maxErr=v}
 
-let drafted=new Set();let submitted=false;let wrongCells=new Set();
+let drafted=new Set();let submitted=false;let wrongCells=new Set();let notes={};let noteMode=false;
+function setMode(m){noteMode=m==="note";document.getElementById("mode-fill").classList.toggle("active",!noteMode);document.getElementById("mode-note").classList.toggle("active",noteMode)}
 function submitDraft(){
   if(gameOver)return;
   // Re-check ALL drafted cells every time
@@ -448,8 +457,19 @@ function submitDraft(){
 }
 function placeNum(n){
   if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;
-  if(n===BLANK){userGrid[r][c]=BLANK;drafted.delete(r+","+c);wrongCells.delete(r+","+c);render();return}
-  if(userGrid[r][c]===n)return;userGrid[r][c]=n;drafted.add(r+","+c);wrongCells.delete(r+","+c);playOk();render()
+  const key=r+","+c;
+  if(noteMode){
+    // Toggle note number
+    if(!notes[key])notes[key]=new Set();
+    if(n===BLANK){delete notes[key]}
+    else if(notes[key].has(n)){notes[key].delete(n);if(!notes[key].size)delete notes[key]}
+    else notes[key].add(n);
+    playOk();render();return;
+  }
+  // Answer mode
+  if(n===BLANK){userGrid[r][c]=BLANK;drafted.delete(key);wrongCells.delete(key);delete notes[key];render();return}
+  if(userGrid[r][c]===n)return;
+  userGrid[r][c]=n;drafted.add(key);wrongCells.delete(key);delete notes[key];playOk();render()
 }
 // Panels
 function openPanel(name){document.getElementById('panel-'+name).classList.add('show');if(name==='me')renderMe()}
@@ -483,11 +503,19 @@ function render(){
     d.style.fontSize=size===16?Math.max(9,csz*.4)+'px':size===9?Math.max(12,csz*.42)+'px':Math.max(14,csz*.45)+'px';
     const i=r*size+c,v=userGrid[r][c];
     if(puzzle[r][c]!==BLANK){d.classList.add('fixed');d.textContent=v}
-    else{if(v){d.textContent=v;
-      if(submitted&&wrongCells.has(r+","+c))d.classList.add('submitted-err');
-      else if(submitted&&drafted.has(r+","+c))d.classList.add('submitted-ok');
-      else d.classList.add('user');
-    }d.onclick=()=>selectCell(i)}
+    else{
+      if(v){d.textContent=v;
+        if(submitted&&wrongCells.has(r+","+c))d.classList.add('submitted-err');
+        else if(submitted&&drafted.has(r+","+c))d.classList.add('submitted-ok');
+        else d.classList.add('user');
+      }else if(notes[r+","+c]){
+        // Show notes
+        const ns=notes[r+","+c];let html='<div class="cell-notes">';
+        for(let n=1;n<=size&&n<=9;n++)html+='<span>'+(ns.has(n)?n:'')+'</span>';
+        html+='</div>';d.innerHTML=html;
+      }
+      d.onclick=()=>selectCell(i);
+    }
     if(i===selected)d.classList.add('selected');
     else if(selected>=0){const sr=selected/size|0,sc=selected%size;if(userGrid[sr][sc]&&v===userGrid[sr][sc]&&v)d.classList.add('same-num');if(r===sr||c===sc)d.classList.add('same-num')}
     b.appendChild(d)}
@@ -499,7 +527,7 @@ function render(){
 function selectCell(i){if(gameOver)return;selected=i;render()}
 function placeNum(n){if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;if(n===BLANK){userGrid[r][c]=BLANK;drafted.delete(r+','+c);render();return}if(userGrid[r][c]===n)return;userGrid[r][c]=n;drafted.add(r+','+c);playOk();render()}
 function checkWin(){for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])return;gameOver=true;stopTimer();stats.played++;stats.won++;stats.streak++;if(stats.streak>stats.bestStreak)stats.bestStreak=stats.streak;if(!stats.best||timerSec<stats.best)stats.best=timerSec;const pd=stats.perDiff[size];pd.played++;pd.won++;if(!pd.best||timerSec<pd.best)pd.best=timerSec;stats.history.push({size:size,won:true,time:timerSec,err:errCount});saveStats();document.getElementById('win-msg').textContent='用时 '+fmt(timerSec)+' · 错误 '+errCount+'次 · 提示 '+hintsUsed+'次';document.getElementById('win-overlay').classList.add('show');playWin()}
-function showHint(){if(gameOver)return;if(maxHints>0&&hintsUsed>=maxHints){toast("💡 提示次数已用完（"+maxHints+"次）");return}const es=[];for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])es.push([r,c]);if(!es.length)return;const[r,c]=es[Math.random()*es.length|0];userGrid[r][c]=solution[r][c];drafted.delete(r+","+c);hintsUsed++;const hc=document.getElementById("hint-count");if(hc)hc.textContent=maxHints===0?hintsUsed:hintsUsed+"/"+maxHints;selected=r*size+c;render();checkWin()}
+function showHint(){if(gameOver)return;if(maxHints>0&&hintsUsed>=maxHints){toast("💡 提示次数已用完（"+maxHints+"次）");return}const es=[];for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])es.push([r,c]);if(!es.length)return;const[r,c]=es[Math.random()*es.length|0];userGrid[r][c]=solution[r][c];drafted.delete(r+","+c);delete notes[r+","+c];hintsUsed++;const hc=document.getElementById("hint-count");if(hc)hc.textContent=maxHints===0?hintsUsed:hintsUsed+"/"+maxHints;selected=r*size+c;render();checkWin()}
 
 // Audio
 const ac=new(window.AudioContext||window.webkitAudioContext)();
@@ -511,7 +539,7 @@ function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.3),i
 // Navigation
 function backToMenu(){stopTimer();document.getElementById('game').style.display='none';document.getElementById('menu').style.display='flex';document.getElementById('win-overlay').classList.remove('show');updateStatsDisplay()}
 function giveUp(){if(gameOver)return;if(confirm('确定要放弃本局？')){gameOver=true;stopTimer();stats.played++;stats.lost++;stats.streak=0;stats.perDiff[size].played++;stats.history.push({size:size,won:false,time:timerSec,err:errCount});saveStats();backToMenu()}}
-function startGame(sz){closePanel('diff');size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;drafted.clear();submitted=false;maxErr=parseInt(localStorage.getItem('xcc-maxErr')||'3');maxHints=parseInt(localStorage.getItem('xcc-maxHints')||'5');document.getElementById('err-count').textContent=0;document.getElementById('max-err').textContent=maxErr===0?'∞':maxErr;document.getElementById('diff-label').textContent={3:'🟢 3×3',6:'🟡 6×6',9:'🔵 9×9',12:'💀 16×16'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';const hc=document.getElementById("hint-count");if(hc)hc.textContent=maxHints===0?"0":"0/"+maxHints;render();startTimer()}
+function startGame(sz){closePanel('diff');size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;drafted.clear();submitted=false;notes={};noteMode=false;setMode('fill');maxErr=parseInt(localStorage.getItem('xcc-maxErr')||'3');maxHints=parseInt(localStorage.getItem('xcc-maxHints')||'5');document.getElementById('err-count').textContent=0;document.getElementById('max-err').textContent=maxErr===0?'∞':maxErr;document.getElementById('diff-label').textContent={3:'🟢 3×3',6:'🟡 6×6',9:'🔵 9×9',12:'💀 16×16'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';const hc=document.getElementById("hint-count");if(hc)hc.textContent=maxHints===0?"0":"0/"+maxHints;render();startTimer()}
 
 // Share
 function doShare(){const url='https://xcc0116.github.io/xcc-sudoku/';if(navigator.share){navigator.share({title:'XCC · 数独挑战',text:'来挑战数独吧！三种难度任你选 🧩',url:url}).catch(()=>copyShareUrl())}else{copyShareUrl()}}
