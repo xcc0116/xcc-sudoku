@@ -151,16 +151,16 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 #timer{font-variant-numeric:tabular-nums}
 #board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:4px 0;overflow:auto;-webkit-overflow-scrolling:touch}
 #board{display:inline-grid;gap:1px;background:var(--border);border:2px solid var(--border);border-radius:6px;overflow:hidden;touch-action:manipulation}
-.cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:background .1s;user-select:none;-webkit-tap-highlight-color:transparent}
+.cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;position:relative;font-weight:700;cursor:pointer;transition:background .1s;user-select:none;-webkit-tap-highlight-color:transparent}
 .cell.fixed{background:var(--cell-fixed);color:var(--neon-blue)}
 
 /* Notes mode */
 .mode-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.mode-btn{padding:5px 12px;font-size:.65rem;font-weight:700;cursor:pointer;border:none;background:var(--card);color:var(--text-dim);transition:.15s}
+.mode-btn{padding:6px 14px;font-size:.7rem;font-weight:700;cursor:pointer;border:none;background:var(--card);color:var(--text-dim);transition:.15s}
 .mode-btn.active{background:var(--neon-blue);color:#000}
-.cell-notes{display:grid;gap:0;width:100%;height:100%;padding:2px;background:rgba(185,77,255,.12);border-radius:3px;box-sizing:border-box}
-.cell-notes span{font-size:clamp(5px,1.2vw,8px);line-height:1;display:flex;align-items:center;justify-content:center;color:var(--neon-purple);opacity:1;font-weight:600;min-width:0}
-.cell.user{color:var(--neon-yellow)}.cell.submitted-ok{color:var(--neon-green)}.cell.submitted-err{background:var(--cell-err);color:var(--neon-red)!important}
+.cell-notes{display:grid;position:absolute;inset:0;gap:0;padding:2px;background:rgba(185,77,255,.15);border-radius:3px;box-sizing:border-box;z-index:1}
+.cell-notes span{font-size:clamp(6px,1.4vw,10px);line-height:1;display:flex;align-items:center;justify-content:center;color:#d970ff;font-weight:700;min-width:0}
+.cell.user{color:var(--neon-yellow);background:rgba(255,230,0,.06)}.cell.submitted-ok{color:var(--neon-green)}.cell.submitted-err{background:var(--cell-err);color:var(--neon-red)!important}
 .cell.selected{background:var(--cell-sel)!important}
 .cell.same-num{background:var(--cell-same)}
 
