@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5,user-scalable=yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>XCC · 数独挑战</title>
@@ -148,7 +148,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .game-top{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 12px 4px;font-size:.8rem;color:var(--text-dim);flex-shrink:0}
 .game-top span{display:inline-flex;align-items:center;gap:3px}
 #timer{font-variant-numeric:tabular-nums}
-#board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:4px 0}
+#board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:4px 0;overflow:auto;-webkit-overflow-scrolling:touch}
 #board{display:inline-grid;gap:1px;background:var(--border);border:2px solid var(--border);border-radius:6px;overflow:hidden;touch-action:manipulation}
 .cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:background .1s;user-select:none;-webkit-tap-highlight-color:transparent}
 .cell.fixed{background:var(--cell-fixed);color:var(--neon-blue)}
@@ -164,6 +164,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .game-actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
 .gbtn{padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;font-size:.65rem;cursor:pointer;font-weight:600;-webkit-tap-highlight-color:transparent}
 .gbtn:active{background:var(--neon-blue);color:#000;border-color:var(--neon-blue)}
+.zoom-hint{font-size:.6rem;color:var(--text-dim);text-align:center;padding:2px 0;opacity:.6}
 .gbtn.submit{color:var(--neon-green);border-color:rgba(57,255,20,.3);font-weight:700}
 .gbtn.submit:active{background:var(--neon-green);color:#000}
 .gbtn.red{color:var(--neon-red);border-color:rgba(255,56,96,.3)}
@@ -344,6 +345,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
     <span>💡 <span id="hint-count">0/<span id="max-hints">5</span></span></span>
   </div>
   <div id="board-wrap"><div id="board"></div></div>
+  <div class="zoom-hint">👆 双指缩放可放大/缩小棋盘</div>
   <div class="game-bottom">
     <div id="numpad"></div>
     <div class="game-actions">
