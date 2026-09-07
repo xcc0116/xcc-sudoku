@@ -14,14 +14,19 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
 /* ===== SPLASH / MENU ===== */
 #menu{flex:1;display:flex;flex-direction:column;position:relative;z-index:1;overflow:hidden}
-.splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
-.splash::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.12),transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none}
-.brand-big{display:flex;flex-direction:column;align-items:center;gap:2px;animation:fadeUp .8s ease}
-.brand-big .xcc{font-size:clamp(3rem,14vw,5rem);font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,var(--neon-blue) 0%,var(--neon-green) 50%,var(--neon-yellow) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(0,212,255,.35));line-height:1}
-.brand-big .dot{width:10px;height:10px;border-radius:50%;background:var(--neon-green);box-shadow:0 0 10px var(--neon-green);animation:pulse 2s ease-in-out infinite}
-.brand-big .tagline{font-size:clamp(.65rem,2.5vw,.85rem);color:var(--text-dim);letter-spacing:4px;text-transform:uppercase}
+.splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative;padding:0 20px}
+.splash::before{content:'';position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.1),transparent 70%);top:45%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+
+/* Character decorations */
+.char{position:absolute;pointer-events:none;z-index:0;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.char.dragon-l{top:6%;left:6%;font-size:clamp(2.4rem,10vw,4rem);animation:bob 3s ease-in-out infinite}
+.char.dragon-r{top:6%;right:6%;font-size:clamp(2.4rem,10vw,4rem);animation:bob 3s ease-in-out infinite 1.5s;transform:scaleX(-1)}
+.char.warrior{bottom:10%;left:4%;font-size:clamp(1.8rem,8vw,3rem);animation:bob 4s ease-in-out infinite .5s}
+.char.princess{bottom:10%;left:14%;font-size:clamp(1.8rem,8vw,3rem);animation:bob 4s ease-in-out infinite 1s}
+.char.cool-guy{bottom:10%;right:5%;font-size:clamp(2rem,9vw,3.4rem);animation:bob 3.5s ease-in-out infinite 2s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
 .game-title{font-size:clamp(1.4rem,6vw,2.2rem);font-weight:800;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green),var(--neon-yellow),var(--neon-red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:fadeUp .8s ease .2s both}
 .game-sub{font-size:clamp(.6rem,2vw,.75rem);color:var(--text-dim);animation:fadeUp .8s ease .3s both}
@@ -187,7 +192,14 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 <!-- MENU -->
 <div id="menu">
   <div class="splash">
-    <div class="stickers"><span>🧩</span><span>⚡</span><span>🧠</span><span>🔥</span><span>✨</span><span>💎</span></div>
+    <!-- Top dragons -->
+    <div class="char dragon-l">🐲</div>
+    <div class="char dragon-r">🐲</div>
+    <!-- Bottom characters -->
+    <div class="char warrior">⚔️</div>
+    <div class="char princess">👸</div>
+    <div class="char cool-guy">😎</div>
+    <!-- Center content -->
     <div class="brand-big">
       <span class="xcc">XCC</span>
       <span class="dot"></span>
