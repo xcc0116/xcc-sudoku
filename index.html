@@ -530,7 +530,7 @@ function render(){
   const e=document.createElement('div');e.className='nbtn erase';e.textContent='✕ 擦除';e.onclick=()=>placeNum(BLANK);np.appendChild(e)
 }
 function selectCell(i){if(gameOver)return;selected=i;render()}
-function placeNum(n){if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;if(n===BLANK){userGrid[r][c]=BLANK;drafted.delete(r+','+c);render();return}if(userGrid[r][c]===n)return;userGrid[r][c]=n;drafted.add(r+','+c);playOk();render()}
+if(userGrid[r][c]===n)return;userGrid[r][c]=n;drafted.add(r+','+c);playOk();render()}
 function checkWin(){for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])return;gameOver=true;stopTimer();stats.played++;stats.won++;stats.streak++;if(stats.streak>stats.bestStreak)stats.bestStreak=stats.streak;if(!stats.best||timerSec<stats.best)stats.best=timerSec;const pd=stats.perDiff[size];pd.played++;pd.won++;if(!pd.best||timerSec<pd.best)pd.best=timerSec;stats.history.push({size:size,won:true,time:timerSec,err:errCount});saveStats();document.getElementById('win-msg').textContent='用时 '+fmt(timerSec)+' · 错误 '+errCount+'次 · 提示 '+hintsUsed+'次';document.getElementById('win-overlay').classList.add('show');playWin()}
 function showHint(){if(gameOver)return;if(maxHints>0&&hintsUsed>=maxHints){toast("💡 提示次数已用完（"+maxHints+"次）");return}const es=[];for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])es.push([r,c]);if(!es.length)return;const[r,c]=es[Math.random()*es.length|0];userGrid[r][c]=solution[r][c];drafted.delete(r+","+c);delete notes[r+","+c];hintsUsed++;const hc=document.getElementById("hint-count");if(hc)hc.textContent=maxHints===0?hintsUsed:hintsUsed+"/"+maxHints;selected=r*size+c;render();checkWin()}
 
