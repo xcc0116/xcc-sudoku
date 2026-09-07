@@ -52,6 +52,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tips b{color:var(--neon-yellow)}
 .footer{margin-top:6px;padding:6px;text-align:center;font-size:.55rem;color:rgba(255,255,255,.15);letter-spacing:1px}
 .footer a{color:var(--neon-blue);text-decoration:none}
+
+/* ===== RULES ===== */
+.rules{max-width:360px;width:100%;margin:4px 0;border:1px solid var(--border);border-radius:8px;background:rgba(26,26,46,.5);overflow:hidden}
+.rules summary{padding:8px 12px;font-size:.75rem;font-weight:700;color:var(--neon-yellow);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px}
+.rules summary::-webkit-details-marker{display:none}
+.rules summary::after{content:'▸';margin-left:auto;transition:transform .2s;font-size:.6rem}
+.rules[open] summary::after{transform:rotate(90deg)}
+.rules-content{padding:0 12px 10px;font-size:.7rem;line-height:1.6;color:var(--text-dim)}
+.rules-content h4{font-size:.75rem;color:var(--neon-blue);margin:6px 0 2px}
+.rules-content p{margin:2px 0}
+.rules-content ul{margin:2px 0;padding-left:16px}
+.rules-content li{margin:1px 0}
+.rules-content b{color:var(--neon-green)}
 .share-section{display:flex;flex-direction:column;align-items:center;gap:4px;margin:4px 0;width:100%;max-width:360px}
 .share-btn{width:100%;padding:10px 16px;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.25s;position:relative;overflow:hidden;background:linear-gradient(135deg,#00d4ff,#39ff14);color:#000;box-shadow:0 4px 20px rgba(0,212,255,.3)}
 .share-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,212,255,.45)}
@@ -165,6 +178,29 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="share-hint">复制链接，发给朋友，点开即玩！</div>
   </div>
   <div class="tips">💡 <b>玩法：</b>点击空格 → 选择数字填入<br>每行、每列、每宫不能重复 · 容错次数可调</div>
+  <details class="rules">
+    <summary>📖 玩法与规则</summary>
+    <div class="rules-content">
+      <h4>🎯 目标</h4>
+      <p>在空格中填入数字，使<b>每行、每列、每宫</b>都包含不重复的数字。</p>
+      <h4>🔢 规则（以9×9为例）</p>
+      <ul>
+        <li><b>每行</b>必须包含 1~9，不能重复</li>
+        <li><b>每列</b>必须包含 1~9，不能重复</li>
+        <li><b>每个3×3宫</b>必须包含 1~9，不能重复</li>
+        <li>3×3和6×6同理，数字范围分别为1~3和1~6</li>
+      </ul>
+      <h4>🎮 操作方法</h4>
+      <ul>
+        <li><b>点击空格</b>选中，再点击下方数字填入</li>
+        <li>填错的数字会<b>变红</b>提示</li>
+        <li>点击 <b>✕ 擦除</b> 可以清空当前格</li>
+        <li>点击 <b>💡 提示</b> 自动填入一个正确数字</li>
+      </ul>
+      <h4>⚙️ 容错设置</h4>
+      <p>主页可调整容错次数（默认3次），设为0则<b>无限容错</b>不会游戏结束。</p>
+    </div>
+  </details>
   <div class="footer">Powered by <a href="#">XCC</a> · Made with 🧠</div>
 </div>
 
