@@ -3,132 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>XCC · 数独挑战</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a14;--cell-bg:#1a1a2e;--cell-fixed:#16213e;--cell-err:rgba(255,50,50,.35);--cell-sel:rgba(0,200,255,.25);--cell-same:rgba(0,200,255,.1);--neon-blue:#00d4ff;--neon-green:#39ff14;--neon-yellow:#ffe600;--neon-red:#ff3860;--neon-purple:#b94dff;--text:#e0e0e0;--text-dim:#777;--border:#2a2a4a}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh;padding:8px;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(0,212,255,.06),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(57,255,20,.04),transparent 50%),radial-gradient(ellipse at 50% 90%,rgba(185,77,255,.05),transparent 50%);pointer-events:none;z-index:0}
-#menu,#game{position:relative;z-index:1}
-.brand{display:flex;flex-direction:column;align-items:center;margin:8px 0 2px;gap:2px}
-.brand-logo{display:flex;align-items:center;gap:6px}
-.brand-logo .xcc{font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(0,212,255,.4))}
-.brand-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--neon-green);box-shadow:0 0 8px var(--neon-green);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-.brand-tag{font-size:.7rem;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase}
-.main-title{font-size:clamp(1.6rem,8vw,3.2rem);font-weight:900;background:linear-gradient(135deg,var(--neon-blue) 0%,var(--neon-green) 40%,var(--neon-yellow) 70%,var(--neon-red) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.2;margin:2px 0;filter:drop-shadow(0 0 20px rgba(0,212,255,.3))}
-.main-sub{font-size:clamp(.7rem,2.5vw,.9rem);color:var(--text-dim);text-align:center;margin-bottom:6px}
-.stickers{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.sticker{position:absolute;font-size:clamp(1.4rem,4vw,2.2rem);opacity:.18;animation:float 6s ease-in-out infinite;filter:saturate(1.5)}
-.sticker:nth-child(1){top:8%;left:6%;animation-delay:0s}
-.sticker:nth-child(2){top:15%;right:8%;animation-delay:1.2s;font-size:clamp(1.2rem,3.5vw,1.8rem)}
-.sticker:nth-child(3){bottom:20%;left:4%;animation-delay:2.4s}
-.sticker:nth-child(4){bottom:12%;right:6%;animation-delay:.8s;font-size:clamp(1rem,3vw,1.6rem)}
-.sticker:nth-child(5){top:40%;left:2%;animation-delay:3s;font-size:clamp(1rem,2.5vw,1.4rem)}
-.sticker:nth-child(6){top:55%;right:3%;animation-delay:1.8s;font-size:clamp(1.2rem,3vw,1.6rem)}
-.sticker:nth-child(7){top:5%;left:50%;animation-delay:4s;font-size:clamp(1rem,2vw,1.3rem)}
-.sticker:nth-child(8){bottom:35%;right:10%;animation-delay:2s;font-size:clamp(1.1rem,3vw,1.5rem)}
-@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(5deg)}}
-.diff-cards{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:440px;margin:4px 0}
-.diff-card{flex:1;min-width:90px;max-width:150px;background:linear-gradient(145deg,rgba(26,26,46,.9),rgba(15,15,30,.95));border:1px solid var(--border);border-radius:12px;padding:10px 6px;cursor:pointer;transition:.25s;text-align:center;position:relative;overflow:hidden}
-.diff-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
-.diff-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
-.diff-card:active{transform:scale(.97)}
-.diff-card.easy::before{background:var(--neon-green)}.diff-card.easy:hover{border-color:var(--neon-green);box-shadow:0 8px 30px rgba(57,255,20,.15)}
-.diff-card.mid::before{background:var(--neon-yellow)}.diff-card.mid:hover{border-color:var(--neon-yellow);box-shadow:0 8px 30px rgba(255,230,0,.15)}
-.diff-card.hard::before{background:var(--neon-blue)}.diff-card.hard:hover{border-color:var(--neon-blue);box-shadow:0 8px 30px rgba(0,212,255,.15)}
-.diff-card .icon{font-size:1.6rem;margin-bottom:2px}
-.diff-card .label{font-size:.95rem;font-weight:700;color:var(--text)}
-.diff-card .desc{font-size:.6rem;color:var(--text-dim);margin-top:2px;line-height:1.3}
-.diff-card .badge{display:inline-block;font-size:.6rem;padding:2px 8px;border-radius:10px;margin-top:6px;font-weight:600}
-.diff-card.easy .badge{background:rgba(57,255,20,.15);color:var(--neon-green)}
-.diff-card.mid .badge{background:rgba(255,230,0,.15);color:var(--neon-yellow)}
-.diff-card.hard .badge{background:rgba(0,212,255,.15);color:var(--neon-blue)}
-.stats-bar{display:flex;gap:12px;justify-content:center;margin:4px 0;flex-wrap:wrap}
-.stat{text-align:center}
-.stat .num{font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.stat .lbl{font-size:.65rem;color:var(--text-dim);margin-top:2px}
-.tips{max-width:360px;margin:4px 0;padding:6px 10px;background:rgba(26,26,46,.6);border:1px solid var(--border);border-radius:8px;font-size:.65rem;color:var(--text-dim);line-height:1.5;text-align:center}
-.tips b{color:var(--neon-yellow)}
-.footer{margin-top:6px;padding:6px;text-align:center;font-size:.55rem;color:rgba(255,255,255,.15);letter-spacing:1px}
-.footer a{color:var(--neon-blue);text-decoration:none}
+:root{--bg:#0a0a14;--cell-bg:#1a1a2e;--cell-fixed:#16213e;--cell-err:rgba(255,50,50,.35);--cell-sel:rgba(0,200,255,.25);--cell-same:rgba(0,200,255,.1);--neon-blue:#00d4ff;--neon-green:#39ff14;--neon-yellow:#ffe600;--neon-red:#ff3860;--neon-purple:#b94dff;--text:#e0e0e0;--text-dim:#666;--border:#2a2a4a;--card:#141428}
+html,body{height:100%;height:100dvh}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;overflow:hidden}
 
-/* ===== RULES ===== */
-.rules{max-width:360px;width:100%;margin:4px 0;border:1px solid var(--border);border-radius:8px;background:rgba(26,26,46,.5);overflow:hidden}
-.rules summary{padding:8px 12px;font-size:.75rem;font-weight:700;color:var(--neon-yellow);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px}
-.rules summary::-webkit-details-marker{display:none}
-.rules summary::after{content:'▸';margin-left:auto;transition:transform .2s;font-size:.6rem}
-.rules[open] summary::after{transform:rotate(90deg)}
-.rules-content{padding:0 12px 10px;font-size:.7rem;line-height:1.6;color:var(--text-dim)}
-.rules-content h4{font-size:.75rem;color:var(--neon-blue);margin:6px 0 2px}
-.rules-content p{margin:2px 0}
-.rules-content ul{margin:2px 0;padding-left:16px}
-.rules-content li{margin:1px 0}
-.rules-content b{color:var(--neon-green)}
-.share-section{display:flex;flex-direction:column;align-items:center;gap:4px;margin:4px 0;width:100%;max-width:360px}
-.share-btn{width:100%;padding:10px 16px;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.25s;position:relative;overflow:hidden;background:linear-gradient(135deg,#00d4ff,#39ff14);color:#000;box-shadow:0 4px 20px rgba(0,212,255,.3)}
-.share-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,212,255,.45)}
-.share-btn:active{transform:scale(.97)}
-.share-btn .icon{font-size:1.2rem}
-.share-btn .glow{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2.5s ease-in-out infinite}
+/* ===== SPLASH / MENU ===== */
+#menu{flex:1;display:flex;flex-direction:column;position:relative;z-index:1;overflow:hidden}
+.splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative}
+.splash::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.12),transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none}
+.brand-big{display:flex;flex-direction:column;align-items:center;gap:2px;animation:fadeUp .8s ease}
+.brand-big .xcc{font-size:clamp(3rem,14vw,5rem);font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,var(--neon-blue) 0%,var(--neon-green) 50%,var(--neon-yellow) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(0,212,255,.35));line-height:1}
+.brand-big .dot{width:10px;height:10px;border-radius:50%;background:var(--neon-green);box-shadow:0 0 10px var(--neon-green);animation:pulse 2s ease-in-out infinite}
+.brand-big .tagline{font-size:clamp(.65rem,2.5vw,.85rem);color:var(--text-dim);letter-spacing:4px;text-transform:uppercase}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+.game-title{font-size:clamp(1.4rem,6vw,2.2rem);font-weight:800;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green),var(--neon-yellow),var(--neon-red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:fadeUp .8s ease .2s both}
+.game-sub{font-size:clamp(.6rem,2vw,.75rem);color:var(--text-dim);animation:fadeUp .8s ease .3s both}
+
+.stickers{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.stickers span{position:absolute;font-size:clamp(1.2rem,4vw,2rem);opacity:.12;animation:float 7s ease-in-out infinite}
+.stickers span:nth-child(1){top:8%;left:8%;animation-delay:0s}
+.stickers span:nth-child(2){top:12%;right:10%;animation-delay:1.5s}
+.stickers span:nth-child(3){bottom:25%;left:5%;animation-delay:3s}
+.stickers span:nth-child(4){bottom:18%;right:8%;animation-delay:.8s}
+.stickers span:nth-child(5){top:35%;left:3%;animation-delay:4s}
+.stickers span:nth-child(6){top:45%;right:4%;animation-delay:2s}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(5deg)}}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{display:flex;background:linear-gradient(180deg,rgba(20,20,40,.95),rgba(10,10,20,.98));border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom,4px);flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer;transition:.2s;-webkit-tap-highlight-color:transparent}
+.nav-item .icon{font-size:1.3rem;line-height:1}
+.nav-item .label{font-size:.55rem;color:var(--text-dim);font-weight:600}
+.nav-item.active .label{color:var(--neon-blue)}
+.nav-item:active{transform:scale(.9)}
+
+/* ===== PANELS (from bottom) ===== */
+.panel-bg{display:none;position:fixed;inset:0;z-index:50}
+.panel-bg.show{display:block}
+.panel-bg .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);animation:fadeIn .2s}
+.panel{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,#1a1a2e,#0f0f20);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,8px));max-height:75vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.panel-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+.panel h3{font-size:1rem;text-align:center;margin-bottom:12px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* Diff panel */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.diff-opt{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.2s}
+.diff-opt:active{transform:scale(.95)}
+.diff-opt .ico{font-size:1.8rem;margin-bottom:4px}
+.diff-opt .name{font-size:.9rem;font-weight:700;color:var(--text)}
+.diff-opt .desc{font-size:.55rem;color:var(--text-dim);margin-top:2px}
+.diff-opt.easy{border-color:rgba(57,255,20,.3)}.diff-opt.easy:active{background:rgba(57,255,20,.1)}
+.diff-opt.mid{border-color:rgba(255,230,0,.3)}.diff-opt.mid:active{background:rgba(255,230,0,.1)}
+.diff-opt.hard{border-color:rgba(0,212,255,.3)}.diff-opt.hard:active{background:rgba(0,212,255,.1)}
+
+/* Err panel */
+.err-panel-body{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0}
+.err-panel-body .lbl{font-size:.85rem;color:var(--text-dim)}
+.err-big-btn{width:40px;height:40px;border:1px solid var(--border);background:var(--card);color:var(--neon-blue);border-radius:10px;font-size:1.4rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.err-big-btn:active{background:var(--neon-blue);color:#000}
+.err-panel-body input{width:72px;text-align:center;padding:8px 0;border:1px solid var(--border);background:var(--card);color:var(--neon-green);border-radius:10px;font-size:1.3rem;font-weight:700;-moz-appearance:textfield}
+.err-panel-body input::-webkit-inner-spin-button,.err-panel-body input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.err-presets{display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.err-presets button{padding:6px 14px;border:1px solid var(--border);background:var(--card);color:var(--text-dim);border-radius:20px;font-size:.7rem;cursor:pointer}
+.err-presets button:active{background:var(--neon-blue);color:#000;border-color:var(--neon-blue)}
+.err-note{font-size:.6rem;color:var(--text-dim);text-align:center;margin-top:8px}
+
+/* Rules panel */
+.rules-body h4{font-size:.8rem;color:var(--neon-blue);margin:10px 0 4px}
+.rules-body h4:first-child{margin-top:0}
+.rules-body p{font-size:.7rem;color:var(--text-dim);line-height:1.6;margin:2px 0}
+.rules-body ul{padding-left:16px;margin:2px 0}
+.rules-body li{font-size:.7rem;color:var(--text-dim);line-height:1.6;margin:2px 0}
+.rules-body b{color:var(--neon-green)}
+
+/* Share panel */
+.share-body{display:flex;flex-direction:column;gap:8px;align-items:center}
+.share-big-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));color:#000;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+.share-big-btn:active{transform:scale(.97)}
+.share-big-btn .glow{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2.5s ease-in-out infinite}
 @keyframes shimmer{0%{left:-60%}100%{left:160%}}
-.share-hint{font-size:.65rem;color:var(--text-dim);text-align:center}
+.share-link-box{width:100%;display:flex;gap:6px}
+.share-link-box input{flex:1;padding:8px 10px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;font-size:.7rem}
+.share-link-box button{padding:8px 12px;border:1px solid var(--neon-blue);background:transparent;color:var(--neon-blue);border-radius:8px;font-size:.7rem;cursor:pointer;font-weight:600}
+.share-link-box button:active{background:var(--neon-blue);color:#000}
+.share-note{font-size:.6rem;color:var(--text-dim);text-align:center}
 
-/* ===== ERR SETTING ===== */
-.err-setting{display:flex;align-items:center;gap:5px;margin:2px 0;font-size:.75rem}
-.err-label{color:var(--text-dim)}
-.err-btn{width:26px;height:26px;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-blue);border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0}
-.err-btn:hover,.err-btn:active{background:var(--neon-blue);color:#000}
-.err-setting input{width:48px;text-align:center;padding:3px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-green);border-radius:6px;font-size:.85rem;font-weight:700;-moz-appearance:textfield}
-.err-setting input::-webkit-inner-spin-button,.err-setting input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.err-hint{color:var(--text-dim);font-size:.6rem}
-
-/* ===== SHARE GUIDE MODAL ===== */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;align-items:center;justify-content:center;padding:20px}
-.modal-bg.show{display:flex}
-.modal{background:linear-gradient(145deg,#1a1a2e,#0f0f20);border:1px solid var(--border);border-radius:16px;padding:24px 20px;max-width:360px;width:100%;text-align:center;position:relative;animation:popIn .3s ease}
-@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-.modal .close{position:absolute;top:10px;right:14px;font-size:1.4rem;cursor:pointer;color:var(--text-dim);background:none;border:none;line-height:1}
-.modal h3{font-size:1.2rem;margin-bottom:16px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.modal .steps{text-align:left;margin:0;padding:0;list-style:none}
-.modal .steps li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:.85rem;line-height:1.5;color:var(--text)}
-.modal .steps li .num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));color:#000;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center}
-.modal .steps li b{color:var(--neon-yellow)}
-.modal .done-btn{margin-top:18px;width:100%;padding:12px;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));color:#000;transition:.2s}
-.modal .done-btn:hover{filter:brightness(1.2)}
+/* Stats inline */
+.stats-row{display:flex;gap:16px;justify-content:center;margin-top:10px}
+.stats-row .s{text-align:center}
+.stats-row .s .n{font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stats-row .s .l{font-size:.55rem;color:var(--text-dim)}
 
 /* ===== GAME ===== */
-#game{display:none;flex-direction:column;align-items:center;width:100%;max-width:500px;gap:2px}
-#info-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:6px 0;font-size:.85rem;color:var(--text-dim)}
-#info-bar span{display:inline-flex;align-items:center;gap:4px}
+#game{display:none;flex-direction:column;flex:1;align-items:center;width:100%;overflow:hidden}
+.game-top{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 12px 4px;font-size:.8rem;color:var(--text-dim);flex-shrink:0}
+.game-top span{display:inline-flex;align-items:center;gap:3px}
 #timer{font-variant-numeric:tabular-nums}
-#board{display:inline-grid;gap:1px;background:var(--border);border:2px solid var(--border);border-radius:6px;overflow:hidden;margin:8px 0;touch-action:manipulation}
-.cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:background .15s;position:relative;user-select:none}
+#board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:4px 0}
+#board{display:inline-grid;gap:1px;background:var(--border);border:2px solid var(--border);border-radius:6px;overflow:hidden;touch-action:manipulation}
+.cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:background .1s;user-select:none;-webkit-tap-highlight-color:transparent}
 .cell.fixed{background:var(--cell-fixed);color:var(--neon-blue)}
 .cell.user{color:var(--neon-green)}
 .cell.selected{background:var(--cell-sel)!important}
 .cell.same-num{background:var(--cell-same)}
 .cell.error{background:var(--cell-err);color:var(--neon-red)!important}
-.cell:hover{filter:brightness(1.3)}
-#numpad{display:grid;gap:3px;margin:4px 0;width:100%;max-width:360px}
-.nbtn{padding:8px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);border-radius:5px;font-size:1rem;font-weight:700;cursor:pointer;transition:.15s;text-align:center}
-.nbtn:hover,.nbtn:active{background:var(--neon-blue);color:#000}
-.nbtn.erase{color:var(--neon-red);font-size:.85rem}
-#actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin:4px 0}
-.btn{padding:8px 18px;border:2px solid var(--neon-blue);background:transparent;color:var(--neon-blue);border-radius:8px;font-size:.85rem;cursor:pointer;transition:.2s;font-weight:600}
-.btn:hover,.btn:active{background:var(--neon-blue);color:#000}
-.btn.green{border-color:var(--neon-green);color:var(--neon-green)}.btn.green:hover,.btn.green:active{background:var(--neon-green);color:#000}
-.btn.small{padding:5px 10px;font-size:.7rem}
-.btn.red{border-color:var(--neon-red);color:var(--neon-red)}.btn.red:hover,.btn.red:active{background:var(--neon-red);color:#fff}
-#win-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-#win-overlay.show{display:flex}
-#win-overlay h2{font-size:1.8rem;background:linear-gradient(90deg,var(--neon-yellow),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#win-overlay p{color:var(--text-dim);font-size:.95rem}
-#share-box{display:none;margin:8px 0;width:100%;max-width:400px}
-#share-box input{width:100%;padding:8px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);border-radius:6px;font-size:.8rem}
-#share-box .btn{margin-top:6px;width:100%}
-.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--neon-green);color:#000;padding:8px 20px;border-radius:20px;font-size:.85rem;font-weight:600;z-index:200;animation:fadeout 2s forwards}
-@keyframes fadeout{0%,70%{opacity:1}100%{opacity:0}}
+.game-bottom{flex-shrink:0;width:100%;padding:0 8px 8px;display:flex;flex-direction:column;align-items:center;gap:4px}
+#numpad{display:grid;gap:3px;width:100%;max-width:380px}
+.nbtn{padding:9px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer;transition:.1s;text-align:center;-webkit-tap-highlight-color:transparent}
+.nbtn:active{background:var(--neon-blue);color:#000}
+.nbtn.erase{color:var(--neon-red);font-size:.75rem}
+.game-actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.gbtn{padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;font-size:.65rem;cursor:pointer;font-weight:600;-webkit-tap-highlight-color:transparent}
+.gbtn:active{background:var(--neon-blue);color:#000;border-color:var(--neon-blue)}
+.gbtn.red{color:var(--neon-red);border-color:rgba(255,56,96,.3)}
+.gbtn.red:active{background:var(--neon-red);color:#fff}
+
+/* Board borders */
 .board-3 .cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
 .board-3 .cell:nth-child(3n){border-right:2px solid var(--neon-blue)}
 .board-3 .cell:nth-child(n+7){border-bottom:2px solid var(--neon-blue)}
@@ -141,104 +140,150 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .board-9 .cell:nth-child(n+19):nth-child(-n+27),
 .board-9 .cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--neon-blue)}
 .board-9 .cell:nth-child(n+73){border-bottom:none}
+
+/* Win overlay */
+#win-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#win-overlay.show{display:flex}
+#win-overlay h2{font-size:1.6rem;background:linear-gradient(90deg,var(--neon-yellow),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#win-overlay p{color:var(--text-dim);font-size:.85rem}
+.win-btn{padding:12px 28px;border:2px solid var(--neon-green);background:transparent;color:var(--neon-green);border-radius:10px;font-size:.95rem;cursor:pointer;font-weight:700}
+.win-btn:active{background:var(--neon-green);color:#000}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--neon-green);color:#000;padding:8px 20px;border-radius:20px;font-size:.8rem;font-weight:600;z-index:200;animation:fadeout 2s forwards}
+@keyframes fadeout{0%,70%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
-<div class="stickers">
-  <div class="sticker">🧩</div><div class="sticker">⚡</div><div class="sticker">🧠</div><div class="sticker">🔥</div>
-  <div class="sticker">✨</div><div class="sticker">💎</div><div class="sticker">🎯</div><div class="sticker">🏆</div>
+
+<!-- MENU -->
+<div id="menu">
+  <div class="splash">
+    <div class="stickers"><span>🧩</span><span>⚡</span><span>🧠</span><span>🔥</span><span>✨</span><span>💎</span></div>
+    <div class="brand-big">
+      <span class="xcc">XCC</span>
+      <span class="dot"></span>
+      <span class="tagline">Creative Studio</span>
+    </div>
+    <div class="game-title">数独挑战</div>
+    <div class="game-sub">逻辑思维 · 烧脑益智 · 随时随地</div>
+    <div class="stats-row">
+      <div class="s"><div class="n" id="s-played">0</div><div class="l">已游玩</div></div>
+      <div class="s"><div class="n" id="s-won">0</div><div class="l">已通关</div></div>
+      <div class="s"><div class="n" id="s-best">--</div><div class="l">最佳用时</div></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="openPanel('diff')"><div class="icon">🎮</div><div class="label">难度</div></div>
+    <div class="nav-item" onclick="openPanel('err')"><div class="icon">🛡️</div><div class="label">容错</div></div>
+    <div class="nav-item" onclick="openPanel('rules')"><div class="icon">📖</div><div class="label">规则</div></div>
+    <div class="nav-item" onclick="openPanel('share')"><div class="icon">📤</div><div class="label">分享</div></div>
+  </div>
 </div>
 
-<div id="menu">
-  <div class="brand">
-    <div class="brand-logo"><span class="xcc">XCC</span><span class="dot"></span></div>
-    <div class="brand-tag">Creative Studio</div>
+<!-- PANELS -->
+<div class="panel-bg" id="panel-diff" onclick="closePanel('diff')">
+  <div class="backdrop"></div>
+  <div class="panel" onclick="event.stopPropagation()">
+    <div class="panel-handle"></div>
+    <h3>🎮 选择难度</h3>
+    <div class="diff-grid">
+      <div class="diff-opt easy" onclick="startGame(3)"><div class="ico">🟢</div><div class="name">3×3</div><div class="desc">入门级</div></div>
+      <div class="diff-opt mid" onclick="startGame(6)"><div class="ico">🟡</div><div class="name">6×6</div><div class="desc">进阶级</div></div>
+      <div class="diff-opt hard" onclick="startGame(9)"><div class="ico">🔵</div><div class="name">9×9</div><div class="desc">经典级</div></div>
+    </div>
   </div>
-  <div class="main-title">数独挑战</div>
-  <div class="main-sub">逻辑思维 · 烧脑益智 · 随时随地</div>
-  <div class="diff-cards">
-    <div class="diff-card easy" onclick="startGame(3)"><div class="icon">🟢</div><div class="label">3×3</div><div class="desc">入门级<br>快速上手</div><span class="badge">新手友好</span></div>
-    <div class="diff-card mid" onclick="startGame(6)"><div class="icon">🟡</div><div class="label">6×6</div><div class="desc">进阶级<br>动动脑子</div><span class="badge">有点挑战</span></div>
-    <div class="diff-card hard" onclick="startGame(9)"><div class="icon">🔵</div><div class="label">9×9</div><div class="desc">经典级<br>全面烧脑</div><span class="badge">高手对决</span></div>
+</div>
+
+<div class="panel-bg" id="panel-err" onclick="closePanel('err')">
+  <div class="backdrop"></div>
+  <div class="panel" onclick="event.stopPropagation()">
+    <div class="panel-handle"></div>
+    <h3>🛡️ 容错次数</h3>
+    <div class="err-panel-body">
+      <button class="err-big-btn" onclick="adjustErr(-1)">−</button>
+      <input id="err-input" type="number" min="0" max="9999" value="3" onchange="setErr(this.value)">
+      <button class="err-big-btn" onclick="adjustErr(1)">+</button>
+    </div>
+    <div class="err-presets">
+      <button onclick="setErr(0)">无限</button>
+      <button onclick="setErr(1)">1次</button>
+      <button onclick="setErr(3)">3次</button>
+      <button onclick="setErr(5)">5次</button>
+      <button onclick="setErr(10)">10次</button>
+    </div>
+    <div class="err-note">设为 0 表示无限容错，不会游戏结束</div>
   </div>
-  <div class="stats-bar">
-    <div class="stat"><div class="num" id="s-played">0</div><div class="lbl">已游玩</div></div>
-    <div class="stat"><div class="num" id="s-won">0</div><div class="lbl">已通关</div></div>
-    <div class="stat"><div class="num" id="s-best">--</div><div class="lbl">最佳用时</div></div>
-  </div>
-  <div class="err-setting">
-    <span class="err-label">容错</span>
-    <button class="err-btn" onclick="adjustErr(-1)">−</button>
-    <input id="err-input" type="number" min="0" max="9999" value="3" onchange="setErr(this.value)">
-    <button class="err-btn" onclick="adjustErr(1)">+</button>
-    <span class="err-hint">0=无限</span>
-  </div>
-  <div class="share-section">
-    <button class="share-btn" onclick="doShare()"><span class="glow"></span><span class="icon">📤</span> 分享给朋友</button>
-    <div class="share-hint">复制链接，发给朋友，点开即玩！</div>
-  </div>
-  <div class="tips">💡 <b>玩法：</b>点击空格 → 选择数字填入<br>每行、每列、每宫不能重复 · 容错次数可调</div>
-  <details class="rules">
-    <summary>📖 玩法与规则</summary>
-    <div class="rules-content">
+</div>
+
+<div class="panel-bg" id="panel-rules" onclick="closePanel('rules')">
+  <div class="backdrop"></div>
+  <div class="panel" onclick="event.stopPropagation()">
+    <div class="panel-handle"></div>
+    <h3>📖 玩法与规则</h3>
+    <div class="rules-body">
       <h4>🎯 目标</h4>
       <p>在空格中填入数字，使<b>每行、每列、每宫</b>都包含不重复的数字。</p>
-      <h4>🔢 规则（以9×9为例）</p>
+      <h4>🔢 规则（以9×9为例）</h4>
       <ul>
         <li><b>每行</b>必须包含 1~9，不能重复</li>
         <li><b>每列</b>必须包含 1~9，不能重复</li>
         <li><b>每个3×3宫</b>必须包含 1~9，不能重复</li>
-        <li>3×3和6×6同理，数字范围分别为1~3和1~6</li>
+        <li>3×3 和 6×6 同理，数字范围分别为 1~3 和 1~6</li>
       </ul>
       <h4>🎮 操作方法</h4>
       <ul>
         <li><b>点击空格</b>选中，再点击下方数字填入</li>
         <li>填错的数字会<b>变红</b>提示</li>
-        <li>点击 <b>✕ 擦除</b> 可以清空当前格</li>
+        <li>点击 <b>✕ 擦除</b> 清空当前格</li>
         <li>点击 <b>💡 提示</b> 自动填入一个正确数字</li>
       </ul>
       <h4>⚙️ 容错设置</h4>
-      <p>主页可调整容错次数（默认3次），设为0则<b>无限容错</b>不会游戏结束。</p>
+      <p>底部导航栏可调整容错次数（默认3次），设为0则<b>无限容错</b>。</p>
     </div>
-  </details>
-  <div class="footer">Powered by <a href="#">XCC</a> · Made with 🧠</div>
-</div>
-
-<!-- SHARE GUIDE MODAL -->
-<div class="modal-bg" id="shareModal">
-  <div class="modal">
-    <button class="close" onclick="closeShareModal()">✕</button>
-    <h3>✅ 链接已复制！</h3>
-    <ul class="steps">
-      <li><span class="num">1</span><span>打开 <b>微信 / QQ</b>，进入聊天窗口</span></li>
-      <li><span class="num">2</span><span>在输入框 <b>粘贴</b> 链接，发送出去</span></li>
-      <li><span class="num">3</span><span>对方点击链接，<b>直接就能玩</b>！</span></li>
-    </ul>
-    <button class="done-btn" onclick="closeShareModal()">我知道了</button>
   </div>
 </div>
 
+<div class="panel-bg" id="panel-share" onclick="closePanel('share')">
+  <div class="backdrop"></div>
+  <div class="panel" onclick="event.stopPropagation()">
+    <div class="panel-handle"></div>
+    <h3>📤 分享给朋友</h3>
+    <div class="share-body">
+      <button class="share-big-btn" onclick="doShare()"><span class="glow"></span>📤 一键分享</button>
+      <div class="share-link-box">
+        <input id="share-url" value="https://xcc0116.github.io/xcc-sudoku/" readonly>
+        <button onclick="copyShareUrl()">复制</button>
+      </div>
+      <div class="share-note">发送给朋友，点开链接即可直接玩！</div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
 <div id="game">
-  <div id="info-bar">
+  <div class="game-top">
     <span id="diff-label"></span>
     <span>⏱ <span id="timer">00:00</span></span>
     <span>❌ <span id="err-count">0</span>/<span id="max-err">3</span></span>
   </div>
-  <div id="board"></div>
-  <div id="numpad"></div>
-  <div id="actions">
-    <button class="btn small" onclick="showHint()">💡 提示</button>
-    <button class="btn small" onclick="getShareLink()">📤 分享</button>
-    <button class="btn small red" onclick="giveUp()">🏳️ 放弃</button>
-    <button class="btn small" onclick="backToMenu()">🏠 返回</button>
+  <div id="board-wrap"><div id="board"></div></div>
+  <div class="game-bottom">
+    <div id="numpad"></div>
+    <div class="game-actions">
+      <button class="gbtn" onclick="showHint()">💡 提示</button>
+      <button class="gbtn" onclick="doShare()">📤 分享</button>
+      <button class="gbtn red" onclick="giveUp()">🏳️ 放弃</button>
+      <button class="gbtn" onclick="backToMenu()">🏠 返回</button>
+    </div>
   </div>
-  <div id="share-box"><input id="share-url" readonly><button class="btn small" onclick="copyShare()">📋 复制链接</button></div>
 </div>
 
+<!-- WIN -->
 <div id="win-overlay">
   <h2>🎉 恭喜通关！</h2>
   <p id="win-msg"></p>
-  <button class="btn green" onclick="backToMenu()">再来一局</button>
+  <button class="win-btn" onclick="backToMenu()">再来一局</button>
 </div>
 
 <script>
@@ -249,37 +294,41 @@ function saveStats(){localStorage.setItem('xcc-sudoku-stats',JSON.stringify(stat
 function updateStatsDisplay(){document.getElementById('s-played').textContent=stats.played;document.getElementById('s-won').textContent=stats.won;document.getElementById('s-best').textContent=stats.best?fmt(stats.best):'--'}
 function fmt(s){return String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 updateStatsDisplay();
-// init err input from localStorage
 document.getElementById('err-input').value=maxErr;
-function adjustErr(d){
-  let v=parseInt(document.getElementById('err-input').value)||0;
-  v=Math.max(0,Math.min(9999,v+d));
-  document.getElementById('err-input').value=v;
-  setErr(v);
-}
-function setErr(v){
-  v=Math.max(0,Math.min(9999,parseInt(v)||0));
-  document.getElementById('err-input').value=v;
-  localStorage.setItem('xcc-maxErr',v);
-  maxErr=v;
-}
+
+// Err control
+function adjustErr(d){let v=parseInt(document.getElementById('err-input').value)||0;v=Math.max(0,Math.min(9999,v+d));document.getElementById('err-input').value=v;setErr(v)}
+function setErr(v){v=Math.max(0,Math.min(9999,parseInt(v)||0));document.getElementById('err-input').value=v;localStorage.setItem('xcc-maxErr',v);maxErr=v}
+
+// Panels
+function openPanel(name){document.getElementById('panel-'+name).classList.add('show')}
+function closePanel(name){document.getElementById('panel-'+name).classList.remove('show')}
+
+// Sudoku engine
 function getBoxDims(n){if(n===3)return[1,3];if(n===6)return[2,3];return[3,3]}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*i+1|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 function isValid(g,n,r,c){const s=g.length,[br,bc]=getBoxDims(s);for(let i=0;i<s;i++){if(g[r][i]===n||g[i][c]===n)return false}const rr=r-r%br,cc=c-c%bc;for(let i=rr;i<br+rr;i++)for(let j=cc;j<bc+cc;j++)if(g[i][j]===n)return false;return true}
 function genSolution(s){const g=Array.from({length:s},()=>Array(s).fill(BLANK));(function solve(r,c){if(r===s)return true;if(c===s)return solve(r+1,0);const ns=shuffle([...Array(s)].map((_,i)=>i+1));for(const n of ns){if(isValid(g,n,r,c)){g[r][c]=n;if(solve(r,c+1))return true;g[r][c]=BLANK}}return false})(0,0);return g}
 function makePuzzle(sol,s){const p=sol.map(r=>[...r]),t=s*s;let rm=s===3?.4:s===6?.5:.55;rm=Math.floor(t*rm);const cs=shuffle([...Array(t)].map((_,i)=>i));for(let i=0;i<rm;i++){const[ix]=cs.splice(0,1);p[ix/s|0][ix%s]=BLANK}return p}
+
+// Timer
 function startTimer(){stopTimer();timerSec=0;updT();timerRef=setInterval(()=>{timerSec++;updT()},1000)}
 function stopTimer(){if(timerRef)clearInterval(timerRef);timerRef=null}
 function updT(){document.getElementById('timer').textContent=fmt(timerSec)}
+
+// Render
 function render(){
   const b=document.getElementById('board');b.innerHTML='';b.className='board-'+size;
   b.style.gridTemplateColumns='repeat('+size+',1fr)';
-  const mx=size===9?44:size===6?52:60,mn=size===9?32:size===6?40:50;
-  b.style.width='min(92vw,55vh,'+mx*size+'px)';
-  const cs='clamp('+mn+'px,min(92vw/'+size+',55vh/'+size+'),'+mx+'px)';
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const avail=Math.min(vw-16,vh*0.48);
+  const mx=size===9?42:size===6?50:58,mn=size===9?28:size===6?36:44;
+  const csz=Math.min(mx,Math.max(mn,Math.floor(avail/size)));
+  b.style.width=(csz*size+size+4)+'px';
   for(let r=0;r<size;r++)for(let c=0;c<size;c++){
-    const d=document.createElement('div');d.className='cell';d.style.width=cs;d.style.height=cs;
-    d.style.fontSize=size===9?'clamp(.9rem,3vw,1.3rem)':'clamp(1rem,4vw,1.6rem)';
+    const d=document.createElement('div');d.className='cell';
+    d.style.width=csz+'px';d.style.height=csz+'px';
+    d.style.fontSize=size===9?Math.max(12,csz*.42)+'px':Math.max(14,csz*.45)+'px';
     const i=r*size+c,v=userGrid[r][c];
     if(puzzle[r][c]!==BLANK){d.classList.add('fixed');d.textContent=v}
     else{if(v){d.textContent=v;d.classList.add('user');if(v!==solution[r][c])d.classList.add('error')}d.onclick=()=>selectCell(i)}
@@ -295,39 +344,27 @@ function selectCell(i){if(gameOver)return;selected=i;render()}
 function placeNum(n){if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;if(n===BLANK){userGrid[r][c]=BLANK;render();checkWin();return}if(userGrid[r][c]===n)return;userGrid[r][c]=n;if(n!==solution[r][c]){errCount++;document.getElementById('err-count').textContent=errCount;playErr();if(maxErr>0&&errCount>=maxErr){gameOver=true;stopTimer();stats.played++;saveStats();setTimeout(()=>alert('💀 错误过多，游戏结束！'),100);backToMenu();return}}else playOk();render();checkWin()}
 function checkWin(){for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])return;gameOver=true;stopTimer();stats.played++;stats.won++;if(!stats.best||timerSec<stats.best)stats.best=timerSec;saveStats();document.getElementById('win-msg').textContent='用时 '+fmt(timerSec)+' · 错误 '+errCount+'次 · 提示 '+hintsUsed+'次';document.getElementById('win-overlay').classList.add('show');playWin()}
 function showHint(){if(gameOver)return;const es=[];for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])es.push([r,c]);if(!es.length)return;const[r,c]=es[Math.random()*es.length|0];userGrid[r][c]=solution[r][c];hintsUsed++;selected=r*size+c;render();checkWin()}
-function getShareLink(){const f=puzzle.flat().join(',');document.getElementById('share-url').value=location.origin+location.pathname+'?s='+size+'&p='+btoa(f);document.getElementById('share-box').style.display='block'}
-function copyShare(){const i=document.getElementById('share-url');i.select();document.execCommand('copy');toast('✅ 已复制！')}
+
+// Audio
 const ac=new(window.AudioContext||window.webkitAudioContext)();
 function tone(f,d,t='sine'){const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=.1;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}
 function playOk(){tone(880,.08)}
 function playErr(){tone(200,.3,'square')}
 function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.3),i*150))}
-function backToMenu(){stopTimer();document.getElementById('game').style.display='none';document.getElementById('menu').style.display='flex';document.getElementById('win-overlay').classList.remove('show');document.getElementById('share-box').style.display='none';updateStatsDisplay()}
+
+// Navigation
+function backToMenu(){stopTimer();document.getElementById('game').style.display='none';document.getElementById('menu').style.display='flex';document.getElementById('win-overlay').classList.remove('show');updateStatsDisplay()}
 function giveUp(){if(gameOver)return;if(confirm('确定要放弃本局？')){gameOver=true;stopTimer();stats.played++;saveStats();backToMenu()}}
-function startGame(sz){size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;maxErr=parseInt(localStorage.getItem('xcc-maxErr')||'3');document.getElementById('err-count').textContent=0;document.getElementById('max-err').textContent=maxErr===0?'∞':maxErr;document.getElementById('diff-label').textContent={3:'🟢 3×3 入门',6:'🟡 6×6 进阶',9:'🔵 9×9 经典'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';document.getElementById('share-box').style.display='none';render();startTimer()}
+function startGame(sz){closePanel('diff');size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;maxErr=parseInt(localStorage.getItem('xcc-maxErr')||'3');document.getElementById('err-count').textContent=0;document.getElementById('max-err').textContent=maxErr===0?'∞':maxErr;document.getElementById('diff-label').textContent={3:'🟢 3×3',6:'🟡 6×6',9:'🔵 9×9'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';render();startTimer()}
 
-// ===== SHARE =====
-function doShare(){
-  const url='https://xcc0116.github.io/xcc-sudoku/';
-  if(navigator.share){
-    navigator.share({title:'XCC · 数独挑战',text:'来挑战数独吧！三种难度任你选 🧩',url:url}).catch(()=>copyLink(url));
-  }else{
-    copyLink(url);
-  }
-}
-function copyLink(url){
-  if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('✅ 链接已复制！发给朋友即可')).catch(()=>fallbackCopy(url))}
-  else fallbackCopy(url);
-}
+// Share
+function doShare(){const url='https://xcc0116.github.io/xcc-sudoku/';if(navigator.share){navigator.share({title:'XCC · 数独挑战',text:'来挑战数独吧！三种难度任你选 🧩',url:url}).catch(()=>copyShareUrl())}else{copyShareUrl()}}
+function copyShareUrl(){const url='https://xcc0116.github.io/xcc-sudoku/';if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('✅ 链接已复制！')).catch(()=>fallbackCopy(url))}else fallbackCopy(url)}
 function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✅ 链接已复制！')}
-function closeShareModal(){document.getElementById('shareModal').classList.remove('show')}
-// close modal on backdrop click
-document.getElementById('shareModal').addEventListener('click',function(e){if(e.target===this)closeShareModal()});
-
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
 
-// ===== LOAD SHARED GAME =====
-(function(){const p=new URLSearchParams(location.search),s=p.get('s'),b=p.get('p');if(s&&b){try{const f=atob(b).split(',').map(Number),sz=+s;if([3,6,9].includes(sz)&&f.length===sz*sz){size=sz;[boxR,boxC]=getBoxDims(sz);puzzle=Array.from({length:sz},(_,r)=>f.slice(r*sz,(r+1)*sz));const g=puzzle.map(r=>[...r]),[br,bc]=getBoxDims(sz);(function slv(r,c){if(r===sz)return;if(c===sz)return slv(r+1,0);if(g[r][c])return slv(r,c+1);for(let n=1;n<=sz;n++){let ok=true;for(let i=0;i<sz;i++)if(g[r][i]===n||g[i][c]===n)ok=false;const rr=r-r%br,cc_=c-c%bc;for(let i=rr;i<br+rr;i++)for(let j=cc_;j<bc+cc_;j++)if(g[i][j]===n)ok=false;if(ok){g[r][c]=n;slv(r,c+1);if(g[r][c])return;g[r][c]=0}}})(0,0);solution=g;userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;document.getElementById('err-count').textContent=0;document.getElementById('diff-label').textContent={3:'🟢 3×3 入门',6:'🟡 6×6 进阶',9:'🔵 9×9 经典'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';render();startTimer();return}}catch(e){}}document.getElementById('menu').style.display='flex'})();
+// Load shared game
+(function(){const p=new URLSearchParams(location.search),s=p.get('s'),b=p.get('p');if(s&&b){try{const f=atob(b).split(',').map(Number),sz=+s;if([3,6,9].includes(sz)&&f.length===sz*sz){size=sz;[boxR,boxC]=getBoxDims(sz);puzzle=Array.from({length:sz},(_,r)=>f.slice(r*sz,(r+1)*sz));const g=puzzle.map(r=>[...r]),[br,bc]=getBoxDims(sz);(function slv(r,c){if(r===sz)return;if(c===sz)return slv(r+1,0);if(g[r][c])return slv(r,c+1);for(let n=1;n<=sz;n++){let ok=true;for(let i=0;i<sz;i++)if(g[r][i]===n||g[i][c]===n)ok=false;const rr=r-r%br,cc_=c-c%bc;for(let i=rr;i<br+rr;i++)for(let j=cc_;j<bc+cc_;j++)if(g[i][j]===n)ok=false;if(ok){g[r][c]=n;slv(r,c+1);if(g[r][c])return;g[r][c]=0}}})(0,0);solution=g;userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;document.getElementById('err-count').textContent=0;document.getElementById('max-err').textContent=maxErr===0?'∞':maxErr;document.getElementById('diff-label').textContent={3:'🟢 3×3',6:'🟡 6×6',9:'🔵 9×9'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';render();startTimer();return}}catch(e){}}})();
 </script>
 </body>
 </html>
