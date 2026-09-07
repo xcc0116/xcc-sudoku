@@ -157,8 +157,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .mode-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .mode-btn{padding:5px 12px;font-size:.65rem;font-weight:700;cursor:pointer;border:none;background:var(--card);color:var(--text-dim);transition:.15s}
 .mode-btn.active{background:var(--neon-blue);color:#000}
-.cell-notes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;width:100%;height:100%;padding:1px}
-.cell-notes span{font-size:clamp(6px,1.5vw,9px);line-height:1;display:flex;align-items:center;justify-content:center;color:var(--neon-purple);opacity:.8}
+.cell-notes{display:grid;gap:0;width:100%;height:100%;padding:1px}
+.cell-notes span{font-size:clamp(5px,1.2vw,8px);line-height:1;display:flex;align-items:center;justify-content:center;color:var(--neon-purple);opacity:.8;min-width:0}
 .cell.user{color:var(--neon-yellow)}.cell.submitted-ok{color:var(--neon-green)}.cell.submitted-err{background:var(--cell-err);color:var(--neon-red)!important}
 .cell.selected{background:var(--cell-sel)!important}
 .cell.same-num{background:var(--cell-same)}
