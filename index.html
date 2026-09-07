@@ -61,6 +61,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 @keyframes shimmer{0%{left:-60%}100%{left:160%}}
 .share-hint{font-size:.65rem;color:var(--text-dim);text-align:center}
 
+/* ===== ERR SETTING ===== */
+.err-setting{display:flex;flex-direction:column;align-items:center;gap:4px;margin:4px 0;width:100%;max-width:300px}
+.err-label{font-size:.75rem;color:var(--text-dim)}
+.err-control{display:flex;align-items:center;gap:6px}
+.err-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-blue);border-radius:8px;font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.err-btn:hover,.err-btn:active{background:var(--neon-blue);color:#000}
+.err-control input{width:64px;text-align:center;padding:5px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--neon-green);border-radius:8px;font-size:1rem;font-weight:700;-moz-appearance:textfield}
+.err-control input::-webkit-inner-spin-button,.err-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.err-hint{font-size:.6rem;color:var(--text-dim)}
+
 /* ===== SHARE GUIDE MODAL ===== */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;align-items:center;justify-content:center;padding:20px}
 .modal-bg.show{display:flex}
@@ -139,6 +149,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="diff-card mid" onclick="startGame(6)"><div class="icon">🟡</div><div class="label">6×6</div><div class="desc">进阶级<br>动动脑子</div><span class="badge">有点挑战</span></div>
     <div class="diff-card hard" onclick="startGame(9)"><div class="icon">🔵</div><div class="label">9×9</div><div class="desc">经典级<br>全面烧脑</div><span class="badge">高手对决</span></div>
   </div>
+  <div class="err-setting">
+    <div class="err-label">容错次数</div>
+    <div class="err-control">
+      <button class="err-btn" onclick="adjustErr(-1)">−</button>
+      <input id="err-input" type="number" min="0" max="9999" value="3" onchange="setErr(this.value)">
+      <button class="err-btn" onclick="adjustErr(1)">+</button>
+    </div>
+    <div class="err-hint">0=无限容错 · 默认3次</div>
+  </div>
   <div class="stats-bar">
     <div class="stat"><div class="num" id="s-played">0</div><div class="lbl">已游玩</div></div>
     <div class="stat"><div class="num" id="s-won">0</div><div class="lbl">已通关</div></div>
@@ -148,7 +167,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="share-btn" onclick="doShare()"><span class="glow"></span><span class="icon">📤</span> 分享给朋友</button>
     <div class="share-hint">复制链接，发给朋友，点开即玩！</div>
   </div>
-  <div class="tips">💡 <b>玩法：</b>点击空格 → 选择数字填入<br>每行、每列、每宫不能重复 · 最多3次错误机会</div>
+  <div class="tips">💡 <b>玩法：</b>点击空格 → 选择数字填入<br>每行、每列、每宫不能重复 · 容错次数可调</div>
   <div class="footer">Powered by <a href="#">XCC</a> · Made with 🧠</div>
 </div>
 
@@ -170,7 +189,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div id="info-bar">
     <span id="diff-label"></span>
     <span>⏱ <span id="timer">00:00</span></span>
-    <span>❌ <span id="err-count">0</span>/3</span>
+    <span>❌ <span id="err-count">0</span>/<span id="max-err">3</span></span>
   </div>
   <div id="board"></div>
   <div id="numpad"></div>
@@ -191,12 +210,26 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <script>
 const BLANK=0;
-let size=9,boxR=3,boxC=3,puzzle=[],solution=[],userGrid=[],selected=-1,errCount=0,maxErr=3,hintsUsed=0,timerSec=0,timerRef=null,gameOver=false;
+let size=9,boxR=3,boxC=3,puzzle=[],solution=[],userGrid=[],selected=-1,errCount=0,maxErr=parseInt(localStorage.getItem('xcc-maxErr')||'3'),hintsUsed=0,timerSec=0,timerRef=null,gameOver=false;
 let stats=JSON.parse(localStorage.getItem('xcc-sudoku-stats')||'{"played":0,"won":0,"best":null}');
 function saveStats(){localStorage.setItem('xcc-sudoku-stats',JSON.stringify(stats));updateStatsDisplay()}
 function updateStatsDisplay(){document.getElementById('s-played').textContent=stats.played;document.getElementById('s-won').textContent=stats.won;document.getElementById('s-best').textContent=stats.best?fmt(stats.best):'--'}
 function fmt(s){return String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 updateStatsDisplay();
+// init err input from localStorage
+document.getElementById('err-input').value=maxErr;
+function adjustErr(d){
+  let v=parseInt(document.getElementById('err-input').value)||0;
+  v=Math.max(0,Math.min(9999,v+d));
+  document.getElementById('err-input').value=v;
+  setErr(v);
+}
+function setErr(v){
+  v=Math.max(0,Math.min(9999,parseInt(v)||0));
+  document.getElementById('err-input').value=v;
+  localStorage.setItem('xcc-maxErr',v);
+  maxErr=v;
+}
 function getBoxDims(n){if(n===3)return[1,3];if(n===6)return[2,3];return[3,3]}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*i+1|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 function isValid(g,n,r,c){const s=g.length,[br,bc]=getBoxDims(s);for(let i=0;i<s;i++){if(g[r][i]===n||g[i][c]===n)return false}const rr=r-r%br,cc=c-c%bc;for(let i=rr;i<br+rr;i++)for(let j=cc;j<bc+cc;j++)if(g[i][j]===n)return false;return true}
@@ -226,7 +259,7 @@ function render(){
   const e=document.createElement('div');e.className='nbtn erase';e.textContent='✕ 擦除';e.onclick=()=>placeNum(BLANK);np.appendChild(e)
 }
 function selectCell(i){if(gameOver)return;selected=i;render()}
-function placeNum(n){if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;if(n===BLANK){userGrid[r][c]=BLANK;render();checkWin();return}if(userGrid[r][c]===n)return;userGrid[r][c]=n;if(n!==solution[r][c]){errCount++;document.getElementById('err-count').textContent=errCount;playErr();if(errCount>=maxErr){gameOver=true;stopTimer();stats.played++;saveStats();setTimeout(()=>alert('💀 错误过多，游戏结束！'),100);backToMenu();return}}else playOk();render();checkWin()}
+function placeNum(n){if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;if(n===BLANK){userGrid[r][c]=BLANK;render();checkWin();return}if(userGrid[r][c]===n)return;userGrid[r][c]=n;if(n!==solution[r][c]){errCount++;document.getElementById('err-count').textContent=errCount;playErr();if(maxErr>0&&errCount>=maxErr){gameOver=true;stopTimer();stats.played++;saveStats();setTimeout(()=>alert('💀 错误过多，游戏结束！'),100);backToMenu();return}}else playOk();render();checkWin()}
 function checkWin(){for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])return;gameOver=true;stopTimer();stats.played++;stats.won++;if(!stats.best||timerSec<stats.best)stats.best=timerSec;saveStats();document.getElementById('win-msg').textContent='用时 '+fmt(timerSec)+' · 错误 '+errCount+'次 · 提示 '+hintsUsed+'次';document.getElementById('win-overlay').classList.add('show');playWin()}
 function showHint(){if(gameOver)return;const es=[];for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])es.push([r,c]);if(!es.length)return;const[r,c]=es[Math.random()*es.length|0];userGrid[r][c]=solution[r][c];hintsUsed++;selected=r*size+c;render();checkWin()}
 function getShareLink(){const f=puzzle.flat().join(',');document.getElementById('share-url').value=location.origin+location.pathname+'?s='+size+'&p='+btoa(f);document.getElementById('share-box').style.display='block'}
@@ -238,7 +271,7 @@ function playErr(){tone(200,.3,'square')}
 function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.3),i*150))}
 function backToMenu(){stopTimer();document.getElementById('game').style.display='none';document.getElementById('menu').style.display='flex';document.getElementById('win-overlay').classList.remove('show');document.getElementById('share-box').style.display='none';updateStatsDisplay()}
 function giveUp(){if(gameOver)return;if(confirm('确定要放弃本局？')){gameOver=true;stopTimer();stats.played++;saveStats();backToMenu()}}
-function startGame(sz){size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;document.getElementById('err-count').textContent=0;document.getElementById('diff-label').textContent={3:'🟢 3×3 入门',6:'🟡 6×6 进阶',9:'🔵 9×9 经典'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';document.getElementById('share-box').style.display='none';render();startTimer()}
+function startGame(sz){size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;maxErr=parseInt(localStorage.getItem('xcc-maxErr')||'3');document.getElementById('err-count').textContent=0;document.getElementById('max-err').textContent=maxErr===0?'∞':maxErr;document.getElementById('diff-label').textContent={3:'🟢 3×3 入门',6:'🟡 6×6 进阶',9:'🔵 9×9 经典'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';document.getElementById('share-box').style.display='none';render();startTimer()}
 
 // ===== SHARE =====
 function doShare(){
