@@ -486,7 +486,11 @@ function render(){
     d.style.fontSize=size===9?Math.max(12,csz*.42)+'px':Math.max(14,csz*.45)+'px';
     const i=r*size+c,v=userGrid[r][c];
     if(puzzle[r][c]!==BLANK){d.classList.add('fixed');d.textContent=v}
-    else{if(v){d.textContent=v;d.classList.add('user');if(v!==solution[r][c])d.classList.add('error')}d.onclick=()=>selectCell(i)}
+    else{if(v){d.textContent=v;
+      if(submitted&&wrongCells.has(r+","+c))d.classList.add('submitted-err');
+      else if(submitted&&drafted.has(r+","+c))d.classList.add('submitted-ok');
+      else d.classList.add('user');
+    }d.onclick=()=>selectCell(i)}
     if(i===selected)d.classList.add('selected');
     else if(selected>=0){const sr=selected/size|0,sc=selected%size;if(userGrid[sr][sc]&&v===userGrid[sr][sc]&&v)d.classList.add('same-num');if(r===sr||c===sc)d.classList.add('same-num')}
     b.appendChild(d)}
