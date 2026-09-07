@@ -242,7 +242,7 @@ function startGame(sz){size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(s
 
 // ===== SHARE =====
 function doShare(){
-  const url='https://litter.catbox.moe/e7nm4t.html';
+  const url='https://xcc0116.github.io/xcc-sudoku/';
   if(navigator.share){
     navigator.share({title:'XCC · 数独挑战',text:'来挑战数独吧！三种难度任你选 🧩',url:url}).catch(()=>copyLink(url));
   }else{
