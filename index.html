@@ -278,7 +278,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       <button onclick="setHint(0)">无限</button>
       <button onclick="setHint(3)">3次</button>
       <button onclick="setHint(5)">5次</button>
-      <button onclick="setHint(10)">10次</button>
+      <button onclick="setHint(5)">5次</button>
     </div>
     <div class="err-note">设为 0 表示无限提示</div>
   </div>
@@ -424,24 +424,31 @@ function setErr(v){v=Math.max(0,Math.min(9999,parseInt(v)||0));document.getEleme
 let drafted=new Set();let submitted=false;let wrongCells=new Set();
 function submitDraft(){
   if(gameOver)return;
-  let wrong=0;
-  drafted.forEach(function(k){
-    const[r,c]=k.split(",").map(Number);
-    if(userGrid[r][c]!==solution[r][c]){wrong++;wrongCells.add(r+','+c)}
-  });
-  errCount+=wrong;
-  document.getElementById("err-count").textContent=errCount;
-  submitted=true;
-  if(wrong>0)playErr();else playOk();
-  render();
-  if(maxErr>0&&errCount>=maxErr){
-    gameOver=true;stopTimer();stats.played++;stats.lost++;stats.streak=0;
-    stats.perDiff[size].played++;stats.history.push({size:size,won:false,time:timerSec,err:errCount});
-    saveStats();setTimeout(()=>alert("💀 错误过多，游戏结束！"),100);backToMenu();return;
+  if(!submitted){
+    // First submit - check all drafted cells
+    let wrong=0;
+    drafted.forEach(function(k){
+      const[r,c]=k.split(",").map(Number);
+      if(userGrid[r][c]!==solution[r][c]){wrong++;wrongCells.add(k)}
+    });
+    if(wrong>0){
+      errCount+=wrong;document.getElementById("err-count").textContent=errCount;
+      playErr();submitted=true;render();
+      if(maxErr>0&&errCount>=maxErr){
+        gameOver=true;stopTimer();stats.played++;stats.lost++;stats.streak=0;
+        stats.perDiff[size].played++;stats.history.push({size:size,won:false,time:timerSec,err:errCount});
+        saveStats();setTimeout(()=>alert("💀 错误过多，游戏结束！"),100);backToMenu();return;
+      }
+      toast("❌ 有 "+wrong+" 处错误，请修改红色格子后再提交！");
+    }else{playOk();render();toast("✅ 全部正确！");drafted.clear();submitted=false;checkWin()}
+  }else{
+    // Resubmit - check if wrongCells are fixed
+    let stillWrong=0;
+    wrongCells.forEach(function(k){const[r,c]=k.split(",").map(Number);if(userGrid[r][c]!==solution[r][c])stillWrong++});
+    if(stillWrong>0){playErr();toast("❌ 还有 "+stillWrong+" 处错误未修改！")}
+    else{playOk();toast("✅ 全部修正！继续加油！");submitted=false;drafted.clear();wrongCells.clear();checkWin()}
+    render();
   }
-  checkWin();
-  if(!gameOver&&wrong>0){toast("❌ 有 "+wrong+" 处错误，请修改红色格子后再提交！");drafted.clear()}
-  else if(!gameOver){toast("✅ 全部正确！");drafted.clear();wrongCells.clear();submitted=false}
 }
 function placeNum(n){
   if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;
