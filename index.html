@@ -158,6 +158,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .mode-btn{padding:5px 12px;font-size:.65rem;font-weight:700;cursor:pointer;border:none;background:var(--card);color:var(--text-dim);transition:.15s}
 .mode-btn.active{background:var(--neon-blue);color:#000}
 .cell-notes{display:grid;gap:0;width:100%;height:100%;padding:1px}
+.cell-notes{background:rgba(185,77,255,.08);border-radius:3px}
 .cell-notes span{font-size:clamp(5px,1.2vw,8px);line-height:1;display:flex;align-items:center;justify-content:center;color:var(--neon-purple);opacity:.8;min-width:0}
 .cell.user{color:var(--neon-yellow)}.cell.submitted-ok{color:var(--neon-green)}.cell.submitted-err{background:var(--cell-err);color:var(--neon-red)!important}
 .cell.selected{background:var(--cell-sel)!important}
@@ -504,15 +505,17 @@ function render(){
     const i=r*size+c,v=userGrid[r][c];
     if(puzzle[r][c]!==BLANK){d.classList.add('fixed');d.textContent=v}
     else{
-      if(v){d.textContent=v;
-        if(submitted&&wrongCells.has(r+","+c))d.classList.add('submitted-err');
-        else if(submitted&&drafted.has(r+","+c))d.classList.add('submitted-ok');
+      const key=r+","+c;
+      if(v){
+        d.textContent=v;
+        if(submitted&&wrongCells.has(key))d.classList.add('submitted-err');
+        else if(submitted&&drafted.has(key))d.classList.add('submitted-ok');
         else d.classList.add('user');
-      }else if(notes[r+","+c]){
-        // Show notes
-        const ns=notes[r+","+c];let html='<div class="cell-notes">';
-        for(let n=1;n<=size&&n<=9;n++)html+='<span>'+(ns.has(n)?n:'')+'</span>';
-        html+='</div>';d.innerHTML=html;
+      }else if(notes[key]){
+        const ns=notes[key];const cols=size<=4?size:size<=9?3:4;
+        let h='<div class="cell-notes" style="grid-template-columns:repeat('+cols+',1fr)">';
+        for(let n=1;n<=size;n++)h+='<span>'+(ns.has(n)?n:'')+'</span>';
+        h+='</div>';d.innerHTML=h;
       }
       d.onclick=()=>selectCell(i);
     }
