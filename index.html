@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>XCC · 数独挑战</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a14;--cell-bg:#1a1a2e;--cell-fixed:#16213e;--cell-err:rgba(255,50,50,.35);--cell-sel:rgba(0,200,255,.25);--cell-same:rgba(0,200,255,.1);--neon-blue:#00d4ff;--neon-green:#39ff14;--neon-yellow:#ffe600;--neon-red:#ff3860;--neon-purple:#b94dff;--text:#e0e0e0;--text-dim:#777;--border:#2a2a4a}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:10px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(0,212,255,.06),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(57,255,20,.04),transparent 50%),radial-gradient(ellipse at 50% 90%,rgba(185,77,255,.05),transparent 50%);pointer-events:none;z-index:0}
+#menu,#game{position:relative;z-index:1}
+.brand{display:flex;flex-direction:column;align-items:center;margin:16px 0 4px;gap:4px}
+.brand-logo{display:flex;align-items:center;gap:6px}
+.brand-logo .xcc{font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(0,212,255,.4))}
+.brand-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--neon-green);box-shadow:0 0 8px var(--neon-green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.brand-tag{font-size:.7rem;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase}
+.main-title{font-size:clamp(2rem,8vw,3.2rem);font-weight:900;background:linear-gradient(135deg,var(--neon-blue) 0%,var(--neon-green) 40%,var(--neon-yellow) 70%,var(--neon-red) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.2;margin:4px 0;filter:drop-shadow(0 0 20px rgba(0,212,255,.3))}
+.main-sub{font-size:.9rem;color:var(--text-dim);text-align:center;margin-bottom:10px}
+.stickers{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.sticker{position:absolute;font-size:clamp(1.4rem,4vw,2.2rem);opacity:.18;animation:float 6s ease-in-out infinite;filter:saturate(1.5)}
+.sticker:nth-child(1){top:8%;left:6%;animation-delay:0s}
+.sticker:nth-child(2){top:15%;right:8%;animation-delay:1.2s;font-size:clamp(1.2rem,3.5vw,1.8rem)}
+.sticker:nth-child(3){bottom:20%;left:4%;animation-delay:2.4s}
+.sticker:nth-child(4){bottom:12%;right:6%;animation-delay:.8s;font-size:clamp(1rem,3vw,1.6rem)}
+.sticker:nth-child(5){top:40%;left:2%;animation-delay:3s;font-size:clamp(1rem,2.5vw,1.4rem)}
+.sticker:nth-child(6){top:55%;right:3%;animation-delay:1.8s;font-size:clamp(1.2rem,3vw,1.6rem)}
+.sticker:nth-child(7){top:5%;left:50%;animation-delay:4s;font-size:clamp(1rem,2vw,1.3rem)}
+.sticker:nth-child(8){bottom:35%;right:10%;animation-delay:2s;font-size:clamp(1.1rem,3vw,1.5rem)}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(5deg)}}
+.diff-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:440px;margin:8px 0}
+.diff-card{flex:1;min-width:120px;max-width:150px;background:linear-gradient(145deg,rgba(26,26,46,.9),rgba(15,15,30,.95));border:1px solid var(--border);border-radius:14px;padding:16px 10px;cursor:pointer;transition:.25s;text-align:center;position:relative;overflow:hidden}
+.diff-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.diff-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.diff-card:active{transform:scale(.97)}
+.diff-card.easy::before{background:var(--neon-green)}.diff-card.easy:hover{border-color:var(--neon-green);box-shadow:0 8px 30px rgba(57,255,20,.15)}
+.diff-card.mid::before{background:var(--neon-yellow)}.diff-card.mid:hover{border-color:var(--neon-yellow);box-shadow:0 8px 30px rgba(255,230,0,.15)}
+.diff-card.hard::before{background:var(--neon-blue)}.diff-card.hard:hover{border-color:var(--neon-blue);box-shadow:0 8px 30px rgba(0,212,255,.15)}
+.diff-card .icon{font-size:2rem;margin-bottom:6px}
+.diff-card .label{font-size:1.1rem;font-weight:700;color:var(--text)}
+.diff-card .desc{font-size:.7rem;color:var(--text-dim);margin-top:4px;line-height:1.4}
+.diff-card .badge{display:inline-block;font-size:.6rem;padding:2px 8px;border-radius:10px;margin-top:6px;font-weight:600}
+.diff-card.easy .badge{background:rgba(57,255,20,.15);color:var(--neon-green)}
+.diff-card.mid .badge{background:rgba(255,230,0,.15);color:var(--neon-yellow)}
+.diff-card.hard .badge{background:rgba(0,212,255,.15);color:var(--neon-blue)}
+.stats-bar{display:flex;gap:16px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.stat{text-align:center}
+.stat .num{font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat .lbl{font-size:.65rem;color:var(--text-dim);margin-top:2px}
+.tips{max-width:360px;margin:6px 0;padding:10px 14px;background:rgba(26,26,46,.6);border:1px solid var(--border);border-radius:10px;font-size:.75rem;color:var(--text-dim);line-height:1.6;text-align:center}
+.tips b{color:var(--neon-yellow)}
+.footer{margin-top:12px;padding:10px;text-align:center;font-size:.6rem;color:rgba(255,255,255,.15);letter-spacing:1px}
+.footer a{color:var(--neon-blue);text-decoration:none}
+.share-section{display:flex;flex-direction:column;align-items:center;gap:8px;margin:8px 0;width:100%;max-width:360px}
+.share-btn{width:100%;padding:14px 20px;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.25s;position:relative;overflow:hidden;background:linear-gradient(135deg,#00d4ff,#39ff14);color:#000;box-shadow:0 4px 20px rgba(0,212,255,.3)}
+.share-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,212,255,.45)}
+.share-btn:active{transform:scale(.97)}
+.share-btn .icon{font-size:1.2rem}
+.share-btn .glow{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2.5s ease-in-out infinite}
+@keyframes shimmer{0%{left:-60%}100%{left:160%}}
+.share-hint{font-size:.65rem;color:var(--text-dim);text-align:center}
+
+/* ===== SHARE GUIDE MODAL ===== */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:linear-gradient(145deg,#1a1a2e,#0f0f20);border:1px solid var(--border);border-radius:16px;padding:24px 20px;max-width:360px;width:100%;text-align:center;position:relative;animation:popIn .3s ease}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal .close{position:absolute;top:10px;right:14px;font-size:1.4rem;cursor:pointer;color:var(--text-dim);background:none;border:none;line-height:1}
+.modal h3{font-size:1.2rem;margin-bottom:16px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.modal .steps{text-align:left;margin:0;padding:0;list-style:none}
+.modal .steps li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:.85rem;line-height:1.5;color:var(--text)}
+.modal .steps li .num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));color:#000;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+.modal .steps li b{color:var(--neon-yellow)}
+.modal .done-btn{margin-top:18px;width:100%;padding:12px;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));color:#000;transition:.2s}
+.modal .done-btn:hover{filter:brightness(1.2)}
+
+/* ===== GAME ===== */
+#game{display:none;flex-direction:column;align-items:center;width:100%;max-width:500px}
+#info-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:6px 0;font-size:.85rem;color:var(--text-dim)}
+#info-bar span{display:inline-flex;align-items:center;gap:4px}
+#timer{font-variant-numeric:tabular-nums}
+#board{display:inline-grid;gap:1px;background:var(--border);border:2px solid var(--border);border-radius:6px;overflow:hidden;margin:8px 0;touch-action:manipulation}
+.cell{background:var(--cell-bg);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;transition:background .15s;position:relative;user-select:none}
+.cell.fixed{background:var(--cell-fixed);color:var(--neon-blue)}
+.cell.user{color:var(--neon-green)}
+.cell.selected{background:var(--cell-sel)!important}
+.cell.same-num{background:var(--cell-same)}
+.cell.error{background:var(--cell-err);color:var(--neon-red)!important}
+.cell:hover{filter:brightness(1.3)}
+#numpad{display:grid;gap:4px;margin:6px 0;width:100%;max-width:360px}
+.nbtn{padding:10px 0;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);border-radius:6px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:.15s;text-align:center}
+.nbtn:hover,.nbtn:active{background:var(--neon-blue);color:#000}
+.nbtn.erase{color:var(--neon-red);font-size:.85rem}
+#actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.btn{padding:10px 22px;border:2px solid var(--neon-blue);background:transparent;color:var(--neon-blue);border-radius:8px;font-size:.95rem;cursor:pointer;transition:.2s;font-weight:600}
+.btn:hover,.btn:active{background:var(--neon-blue);color:#000}
+.btn.green{border-color:var(--neon-green);color:var(--neon-green)}.btn.green:hover,.btn.green:active{background:var(--neon-green);color:#000}
+.btn.small{padding:6px 14px;font-size:.8rem}
+.btn.red{border-color:var(--neon-red);color:var(--neon-red)}.btn.red:hover,.btn.red:active{background:var(--neon-red);color:#fff}
+#win-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#win-overlay.show{display:flex}
+#win-overlay h2{font-size:1.8rem;background:linear-gradient(90deg,var(--neon-yellow),var(--neon-green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#win-overlay p{color:var(--text-dim);font-size:.95rem}
+#share-box{display:none;margin:8px 0;width:100%;max-width:400px}
+#share-box input{width:100%;padding:8px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);border-radius:6px;font-size:.8rem}
+#share-box .btn{margin-top:6px;width:100%}
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--neon-green);color:#000;padding:8px 20px;border-radius:20px;font-size:.85rem;font-weight:600;z-index:200;animation:fadeout 2s forwards}
+@keyframes fadeout{0%,70%{opacity:1}100%{opacity:0}}
+.board-3 .cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.board-3 .cell:nth-child(3n){border-right:2px solid var(--neon-blue)}
+.board-3 .cell:nth-child(n+7){border-bottom:2px solid var(--neon-blue)}
+.board-6 .cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.board-6 .cell:nth-child(3n){border-right:2px solid var(--neon-blue)}
+.board-6 .cell:nth-child(n+4){border-bottom:2px solid var(--neon-blue)}
+.board-9 .cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.board-9 .cell:nth-child(9n){border-right:none}
+.board-9 .cell:nth-child(3n){border-right:2px solid var(--neon-blue)}
+.board-9 .cell:nth-child(n+19):nth-child(-n+27),
+.board-9 .cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--neon-blue)}
+.board-9 .cell:nth-child(n+73){border-bottom:none}
+</style>
+</head>
+<body>
+<div class="stickers">
+  <div class="sticker">🧩</div><div class="sticker">⚡</div><div class="sticker">🧠</div><div class="sticker">🔥</div>
+  <div class="sticker">✨</div><div class="sticker">💎</div><div class="sticker">🎯</div><div class="sticker">🏆</div>
+</div>
+
+<div id="menu">
+  <div class="brand">
+    <div class="brand-logo"><span class="xcc">XCC</span><span class="dot"></span></div>
+    <div class="brand-tag">Creative Studio</div>
+  </div>
+  <div class="main-title">数独挑战</div>
+  <div class="main-sub">逻辑思维 · 烧脑益智 · 随时随地</div>
+  <div class="diff-cards">
+    <div class="diff-card easy" onclick="startGame(3)"><div class="icon">🟢</div><div class="label">3×3</div><div class="desc">入门级<br>快速上手</div><span class="badge">新手友好</span></div>
+    <div class="diff-card mid" onclick="startGame(6)"><div class="icon">🟡</div><div class="label">6×6</div><div class="desc">进阶级<br>动动脑子</div><span class="badge">有点挑战</span></div>
+    <div class="diff-card hard" onclick="startGame(9)"><div class="icon">🔵</div><div class="label">9×9</div><div class="desc">经典级<br>全面烧脑</div><span class="badge">高手对决</span></div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="num" id="s-played">0</div><div class="lbl">已游玩</div></div>
+    <div class="stat"><div class="num" id="s-won">0</div><div class="lbl">已通关</div></div>
+    <div class="stat"><div class="num" id="s-best">--</div><div class="lbl">最佳用时</div></div>
+  </div>
+  <div class="share-section">
+    <button class="share-btn" onclick="doShare()"><span class="glow"></span><span class="icon">📤</span> 分享给朋友</button>
+    <div class="share-hint">复制链接，发给朋友，点开即玩！</div>
+  </div>
+  <div class="tips">💡 <b>玩法：</b>点击空格 → 选择数字填入<br>每行、每列、每宫不能重复 · 最多3次错误机会</div>
+  <div class="footer">Powered by <a href="#">XCC</a> · Made with 🧠</div>
+</div>
+
+<!-- SHARE GUIDE MODAL -->
+<div class="modal-bg" id="shareModal">
+  <div class="modal">
+    <button class="close" onclick="closeShareModal()">✕</button>
+    <h3>✅ 链接已复制！</h3>
+    <ul class="steps">
+      <li><span class="num">1</span><span>打开 <b>微信 / QQ</b>，进入聊天窗口</span></li>
+      <li><span class="num">2</span><span>在输入框 <b>粘贴</b> 链接，发送出去</span></li>
+      <li><span class="num">3</span><span>对方点击链接，<b>直接就能玩</b>！</span></li>
+    </ul>
+    <button class="done-btn" onclick="closeShareModal()">我知道了</button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="info-bar">
+    <span id="diff-label"></span>
+    <span>⏱ <span id="timer">00:00</span></span>
+    <span>❌ <span id="err-count">0</span>/3</span>
+  </div>
+  <div id="board"></div>
+  <div id="numpad"></div>
+  <div id="actions">
+    <button class="btn small" onclick="showHint()">💡 提示</button>
+    <button class="btn small" onclick="getShareLink()">📤 分享</button>
+    <button class="btn small red" onclick="giveUp()">🏳️ 放弃</button>
+    <button class="btn small" onclick="backToMenu()">🏠 返回</button>
+  </div>
+  <div id="share-box"><input id="share-url" readonly><button class="btn small" onclick="copyShare()">📋 复制链接</button></div>
+</div>
+
+<div id="win-overlay">
+  <h2>🎉 恭喜通关！</h2>
+  <p id="win-msg"></p>
+  <button class="btn green" onclick="backToMenu()">再来一局</button>
+</div>
+
+<script>
+const BLANK=0;
+let size=9,boxR=3,boxC=3,puzzle=[],solution=[],userGrid=[],selected=-1,errCount=0,maxErr=3,hintsUsed=0,timerSec=0,timerRef=null,gameOver=false;
+let stats=JSON.parse(localStorage.getItem('xcc-sudoku-stats')||'{"played":0,"won":0,"best":null}');
+function saveStats(){localStorage.setItem('xcc-sudoku-stats',JSON.stringify(stats));updateStatsDisplay()}
+function updateStatsDisplay(){document.getElementById('s-played').textContent=stats.played;document.getElementById('s-won').textContent=stats.won;document.getElementById('s-best').textContent=stats.best?fmt(stats.best):'--'}
+function fmt(s){return String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+updateStatsDisplay();
+function getBoxDims(n){if(n===3)return[1,3];if(n===6)return[2,3];return[3,3]}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*i+1|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function isValid(g,n,r,c){const s=g.length,[br,bc]=getBoxDims(s);for(let i=0;i<s;i++){if(g[r][i]===n||g[i][c]===n)return false}const rr=r-r%br,cc=c-c%bc;for(let i=rr;i<br+rr;i++)for(let j=cc;j<bc+cc;j++)if(g[i][j]===n)return false;return true}
+function genSolution(s){const g=Array.from({length:s},()=>Array(s).fill(BLANK));(function solve(r,c){if(r===s)return true;if(c===s)return solve(r+1,0);const ns=shuffle([...Array(s)].map((_,i)=>i+1));for(const n of ns){if(isValid(g,n,r,c)){g[r][c]=n;if(solve(r,c+1))return true;g[r][c]=BLANK}}return false})(0,0);return g}
+function makePuzzle(sol,s){const p=sol.map(r=>[...r]),t=s*s;let rm=s===3?.4:s===6?.5:.55;rm=Math.floor(t*rm);const cs=shuffle([...Array(t)].map((_,i)=>i));for(let i=0;i<rm;i++){const[ix]=cs.splice(0,1);p[ix/s|0][ix%s]=BLANK}return p}
+function startTimer(){stopTimer();timerSec=0;updT();timerRef=setInterval(()=>{timerSec++;updT()},1000)}
+function stopTimer(){if(timerRef)clearInterval(timerRef);timerRef=null}
+function updT(){document.getElementById('timer').textContent=fmt(timerSec)}
+function render(){
+  const b=document.getElementById('board');b.innerHTML='';b.className='board-'+size;
+  b.style.gridTemplateColumns='repeat('+size+',1fr)';
+  const mx=size===9?44:size===6?52:60,mn=size===9?32:size===6?40:50;
+  b.style.width='min(90vw,90vh,'+mx*size+'px)';
+  const cs='clamp('+mn+'px,min(90vw/'+size+',90vh/'+size+'),'+mx+'px)';
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++){
+    const d=document.createElement('div');d.className='cell';d.style.width=cs;d.style.height=cs;
+    d.style.fontSize=size===9?'clamp(.9rem,3vw,1.3rem)':'clamp(1rem,4vw,1.6rem)';
+    const i=r*size+c,v=userGrid[r][c];
+    if(puzzle[r][c]!==BLANK){d.classList.add('fixed');d.textContent=v}
+    else{if(v){d.textContent=v;d.classList.add('user');if(v!==solution[r][c])d.classList.add('error')}d.onclick=()=>selectCell(i)}
+    if(i===selected)d.classList.add('selected');
+    else if(selected>=0){const sr=selected/size|0,sc=selected%size;if(userGrid[sr][sc]&&v===userGrid[sr][sc]&&v)d.classList.add('same-num');if(r===sr||c===sc)d.classList.add('same-num')}
+    b.appendChild(d)}
+  const np=document.getElementById('numpad');np.innerHTML='';
+  const cols=size<=6?size:9;np.style.gridTemplateColumns='repeat('+(cols+1)+',1fr)';
+  for(let i=1;i<=size;i++){const b=document.createElement('div');b.className='nbtn';b.textContent=i;b.onclick=()=>placeNum(i);np.appendChild(b)}
+  const e=document.createElement('div');e.className='nbtn erase';e.textContent='✕ 擦除';e.onclick=()=>placeNum(BLANK);np.appendChild(e)
+}
+function selectCell(i){if(gameOver)return;selected=i;render()}
+function placeNum(n){if(gameOver||selected<0)return;const r=selected/size|0,c=selected%size;if(puzzle[r][c]!==BLANK)return;if(n===BLANK){userGrid[r][c]=BLANK;render();checkWin();return}if(userGrid[r][c]===n)return;userGrid[r][c]=n;if(n!==solution[r][c]){errCount++;document.getElementById('err-count').textContent=errCount;playErr();if(errCount>=maxErr){gameOver=true;stopTimer();stats.played++;saveStats();setTimeout(()=>alert('💀 错误过多，游戏结束！'),100);backToMenu();return}}else playOk();render();checkWin()}
+function checkWin(){for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])return;gameOver=true;stopTimer();stats.played++;stats.won++;if(!stats.best||timerSec<stats.best)stats.best=timerSec;saveStats();document.getElementById('win-msg').textContent='用时 '+fmt(timerSec)+' · 错误 '+errCount+'次 · 提示 '+hintsUsed+'次';document.getElementById('win-overlay').classList.add('show');playWin()}
+function showHint(){if(gameOver)return;const es=[];for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(userGrid[r][c]!==solution[r][c])es.push([r,c]);if(!es.length)return;const[r,c]=es[Math.random()*es.length|0];userGrid[r][c]=solution[r][c];hintsUsed++;selected=r*size+c;render();checkWin()}
+function getShareLink(){const f=puzzle.flat().join(',');document.getElementById('share-url').value=location.origin+location.pathname+'?s='+size+'&p='+btoa(f);document.getElementById('share-box').style.display='block'}
+function copyShare(){const i=document.getElementById('share-url');i.select();document.execCommand('copy');toast('✅ 已复制！')}
+const ac=new(window.AudioContext||window.webkitAudioContext)();
+function tone(f,d,t='sine'){const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=.1;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}
+function playOk(){tone(880,.08)}
+function playErr(){tone(200,.3,'square')}
+function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.3),i*150))}
+function backToMenu(){stopTimer();document.getElementById('game').style.display='none';document.getElementById('menu').style.display='flex';document.getElementById('win-overlay').classList.remove('show');document.getElementById('share-box').style.display='none';updateStatsDisplay()}
+function giveUp(){if(gameOver)return;if(confirm('确定要放弃本局？')){gameOver=true;stopTimer();stats.played++;saveStats();backToMenu()}}
+function startGame(sz){size=sz;[boxR,boxC]=getBoxDims(sz);solution=genSolution(sz);puzzle=makePuzzle(solution,sz);userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;document.getElementById('err-count').textContent=0;document.getElementById('diff-label').textContent={3:'🟢 3×3 入门',6:'🟡 6×6 进阶',9:'🔵 9×9 经典'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';document.getElementById('share-box').style.display='none';render();startTimer()}
+
+// ===== SHARE =====
+function doShare(){
+  const url='https://litter.catbox.moe/e7nm4t.html';
+  if(navigator.share){
+    navigator.share({title:'XCC · 数独挑战',text:'来挑战数独吧！三种难度任你选 🧩',url:url}).catch(()=>copyLink(url));
+  }else{
+    copyLink(url);
+  }
+}
+function copyLink(url){
+  if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('✅ 链接已复制！发给朋友即可')).catch(()=>fallbackCopy(url))}
+  else fallbackCopy(url);
+}
+function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✅ 链接已复制！')}
+function closeShareModal(){document.getElementById('shareModal').classList.remove('show')}
+// close modal on backdrop click
+document.getElementById('shareModal').addEventListener('click',function(e){if(e.target===this)closeShareModal()});
+
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+// ===== LOAD SHARED GAME =====
+(function(){const p=new URLSearchParams(location.search),s=p.get('s'),b=p.get('p');if(s&&b){try{const f=atob(b).split(',').map(Number),sz=+s;if([3,6,9].includes(sz)&&f.length===sz*sz){size=sz;[boxR,boxC]=getBoxDims(sz);puzzle=Array.from({length:sz},(_,r)=>f.slice(r*sz,(r+1)*sz));const g=puzzle.map(r=>[...r]),[br,bc]=getBoxDims(sz);(function slv(r,c){if(r===sz)return;if(c===sz)return slv(r+1,0);if(g[r][c])return slv(r,c+1);for(let n=1;n<=sz;n++){let ok=true;for(let i=0;i<sz;i++)if(g[r][i]===n||g[i][c]===n)ok=false;const rr=r-r%br,cc_=c-c%bc;for(let i=rr;i<br+rr;i++)for(let j=cc_;j<bc+cc_;j++)if(g[i][j]===n)ok=false;if(ok){g[r][c]=n;slv(r,c+1);if(g[r][c])return;g[r][c]=0}}})(0,0);solution=g;userGrid=puzzle.map(r=>[...r]);selected=-1;errCount=0;hintsUsed=0;gameOver=false;document.getElementById('err-count').textContent=0;document.getElementById('diff-label').textContent={3:'🟢 3×3 入门',6:'🟡 6×6 进阶',9:'🔵 9×9 经典'}[sz];document.getElementById('menu').style.display='none';document.getElementById('game').style.display='flex';render();startTimer();return}}catch(e){}}document.getElementById('menu').style.display='flex'})();
+</script>
+</body>
+</html>
